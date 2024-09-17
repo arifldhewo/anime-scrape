@@ -2,17 +2,28 @@ import { test, expect } from "@playwright/test";
 import { unlink, writeFile } from "node:fs/promises";
 
 const config = {
-  searchTitle: "Yozakura",
-  titlePerEps: "Mission Yozakura Family",
-  titleSave: "Mission Yozakura Family",
+  searchTitle: "Madougushi Dahliya wa Utsumukanai",
+  titlePerEps: "Madougushi Dahliya wa Utsumukanai",
+  titleSave: "Madougushi Dahliya wa Utsumukanai",
   totalEps: 24,
   streamService: "Krakenfiles",
 };
 
-for (let i = 9; i <= config.totalEps; i++) {
+/* 
+  API Search Kuramanime: https://kuramanime.dad/anime?search=Yozakura&order_by=oldest&need_json=true
+  response ada id, slug, title
+
+  API Quick / Lihat Semua : https://kuramanime.dad/quick/ongoing?order_by=updated&page=2&need_json=true 
+  
+
+  Web Detail Page Kuramanime https://kuramanime.dad/anime/2668/yozakura-san-chi-no-daisakusen https://kuramanime.dad/anime/:id/:slug
+
+  Web Eps Page Kuramanime https://kuramanime.dad/anime/2668/yozakura-san-chi-no-daisakusen/episode/24 https://kuramanime.dad/adnime/:id/:slug/episode/:
+*/
+for (let i = 1; i <= config.totalEps; i++) {
   test(`scrape anime ${config.titleSave} on samehadaku episode ${i}`, { tag: ["@samehadaku"] }, async ({ page }) => {
     await test.step("Create m3u files on first iteration", async () => {
-      if (i == 9) {
+      if (i == 1) {
         await unlink(`./output/${config.titleSave}.m3u`).catch((err) => console.error(err));
 
         await writeFile(`./output/${config.titleSave}.m3u`, "#EXTM3U", { flag: "a" }).catch((err) =>
