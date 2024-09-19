@@ -32,7 +32,7 @@ export default class Helper {
       "Desember",
     ];
 
-    const currentMonth = allMonths[date.getMonth() - 1];
+    const currentMonth = allMonths[date.getMonth()];
 
     return `${date.getDate()}-${currentMonth}-${date.getFullYear()}`;
   }

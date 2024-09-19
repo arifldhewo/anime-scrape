@@ -58,8 +58,8 @@ test("scrape kuramanime information release every 7PM", { tag: ["@kuramanime"] }
         <head>
         </head>
         <body>
-          <h1>Latest Episodes on Kuramanime</h1>
-          <h3> Today Date: ${helper.getDate()}</h3>
+          <h1>Latest Anime Episodes</h1>
+          <h3> Today Date: ${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}</h3>
           <table>
           <tr>
             <th> Title </th>
@@ -77,7 +77,7 @@ test("scrape kuramanime information release every 7PM", { tag: ["@kuramanime"] }
     const mailOptions = {
       to: `${process.env.RECIPIENT_EMAIL}`,
       from: `${process.env.SENDER_EMAIL}`,
-      subject: "Latest Kuramanime Episodes Today",
+      subject: "Latest Episodes Anime",
       html,
     };
 
