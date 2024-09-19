@@ -2,11 +2,13 @@ require("dotenv").config();
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
+const html =   ``
+
 const mailOptions = {
-  to: "arifldhewo234@gmail.com",
+  to: "arifldhewo@mailsac.com",
   from: "arifldhewo.testing@gmail.com",
-  subject: "Important Message",
-  text: "This is a test email from SendGrid."
+  subject: "OTP",
+  html
 };
 
 sgMail.send(mailOptions)

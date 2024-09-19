@@ -7,6 +7,7 @@ import sgMail from "@sendgrid/mail";
 dotenv.config();
 let firstResponse: iQuickResAPI;
 let allFilterPages: any[] = [];
+if (process.env.SENDGRID_API_KEY) sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 test("scrape kuramanime information release every 7PM", { tag: ["@kuramanime"] }, async ({ page }) => {
   const helper = new Helper(page);
@@ -21,6 +22,8 @@ test("scrape kuramanime information release every 7PM", { tag: ["@kuramanime"] }
 
   const totalPages = firstResponse.animes.last_page;
 
+  let td: string[] = [];
+
   for (let i = 1; i <= totalPages; i++) {
     await test.step(`Scrape on page ${i}`, async () => {
       const res = await helper.reqGetResponseWithQueryParam<iQuickResAPI>("https://kuramanime.dad/quick/ongoing", {
@@ -32,34 +35,54 @@ test("scrape kuramanime information release every 7PM", { tag: ["@kuramanime"] }
       const resJP = res.animes.data.filter((data) => data.country_code === "JP");
 
       resJP.map((data) => {
-        let obj = {
-          title: data.title,
-          latestEpisode: data.latest_episode,
-          totalEpisodes: data.total_episodes,
-          latestPostAt: data.latest_post_at,
-        };
-
-        allFilterPages.push(obj);
+        td.push(`
+        <tr>
+          <td> ${data.title} </td>
+          <td> ${data.latest_episode} </td>
+          <td> ${data.total_episodes} </td>
+          <td> ${data.latest_post_at} </td>
+        </tr>
+        `);
       });
     });
   }
 
-  test.step(`Sending to email ${process.env.RECIPIENT_EMAIL}`, () => {
-    if (process.env.SENDGRID_API_KEY) {
-      sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-      const mailOptions = {
-        to: `${process.env.RECIPIENT_EMAIL}`,
-        from: `${process.env.SENDER_EMAIL}`,
-        subject: "Latest Kuramanime Episodes Today",
-        text: `${allFilterPages.toString()}`,
-      };
+  let tdFilter: string = "";
 
-      sgMail
-        .send(mailOptions)
-        .then((res) => console.log(res))
-        .catch((err) => console.log(err));
-    } else {
-      console.error("SENDGRID_API_KEY undefined");
-    }
+  td.map((data) => {
+    tdFilter += data;
+  });
+
+  let html: string = `
+      <html>
+        <head>
+        </head>
+        <body>
+          <h1>Latest Episodes on Kuramanime</h1>
+          <table>
+          <tr>
+            <th> Title </th>
+            <th> Latest Episode </th>
+            <th> Total Episode </th>
+            <th> Latest Post At </th>
+          </tr>
+          ${tdFilter}
+          </table>
+        </body>
+      </html>
+    `;
+
+  await test.step(`Sending to email ${process.env.RECIPIENT_EMAIL}`, async () => {
+    const mailOptions = {
+      to: `arifldhewo@mailsac.com`,
+      from: `${process.env.SENDER_EMAIL}`,
+      subject: "Latest Kuramanime Episodes Today",
+      html,
+    };
+
+    await sgMail
+      .send(mailOptions)
+      .then((res) => console.log(res))
+      .catch((err) => console.log(err));
   });
 });
