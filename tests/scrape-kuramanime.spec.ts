@@ -6,7 +6,7 @@ import sgMail from "@sendgrid/mail";
 
 dotenv.config();
 let firstResponse: iQuickResAPI;
-let allFilterPages: any[] = [];
+const date = new Date();
 if (process.env.SENDGRID_API_KEY) sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 test("scrape kuramanime information release every 7PM", { tag: ["@kuramanime"] }, async ({ page }) => {
@@ -59,6 +59,7 @@ test("scrape kuramanime information release every 7PM", { tag: ["@kuramanime"] }
         </head>
         <body>
           <h1>Latest Episodes on Kuramanime</h1>
+          <h3> Today Date: ${helper.getDate()}</h3>
           <table>
           <tr>
             <th> Title </th>
@@ -74,15 +75,12 @@ test("scrape kuramanime information release every 7PM", { tag: ["@kuramanime"] }
 
   await test.step(`Sending to email ${process.env.RECIPIENT_EMAIL}`, async () => {
     const mailOptions = {
-      to: `arifldhewo@mailsac.com`,
+      to: `${process.env.RECIPIENT_EMAIL}`,
       from: `${process.env.SENDER_EMAIL}`,
       subject: "Latest Kuramanime Episodes Today",
       html,
     };
 
-    await sgMail
-      .send(mailOptions)
-      .then((res) => console.log(res))
-      .catch((err) => console.log(err));
+    await sgMail.send(mailOptions).catch((err) => console.log(err));
   });
 });
