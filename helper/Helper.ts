@@ -1,0 +1,17 @@
+import { Page } from "@playwright/test";
+
+export default class Helper {
+  page: Page;
+
+  constructor(page: Page) {
+    this.page = page;
+  }
+
+  async reqGetResponseWithQueryParam<T>(url: string, queryParams: Record<string, string>): Promise<T> {
+    const req = await this.page.request.get(url, {
+      params: queryParams,
+    });
+
+    return await req.json();
+  }
+}

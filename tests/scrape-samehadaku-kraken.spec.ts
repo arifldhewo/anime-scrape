@@ -2,10 +2,10 @@ import { test, expect } from "@playwright/test";
 import { unlink, writeFile } from "node:fs/promises";
 
 const config = {
-  searchTitle: "Madougushi Dahliya wa Utsumukanai",
-  titlePerEps: "Madougushi Dahliya wa Utsumukanai",
-  titleSave: "Madougushi Dahliya wa Utsumukanai",
-  totalEps: 24,
+  searchTitle: "Dungeon no Naka no Hito",
+  titlePerEps: "Dungeon no Naka no Hito",
+  titleSave: "Dungeon no Naka no Hito",
+  latestEps: 10,
   streamService: "Krakenfiles",
 };
 
@@ -14,13 +14,12 @@ const config = {
   response ada id, slug, title
 
   API Quick / Lihat Semua : https://kuramanime.dad/quick/ongoing?order_by=updated&page=2&need_json=true 
-  
 
   Web Detail Page Kuramanime https://kuramanime.dad/anime/2668/yozakura-san-chi-no-daisakusen https://kuramanime.dad/anime/:id/:slug
 
-  Web Eps Page Kuramanime https://kuramanime.dad/anime/2668/yozakura-san-chi-no-daisakusen/episode/24 https://kuramanime.dad/adnime/:id/:slug/episode/:
+  Web Eps Page Kuramanime https://kuramanime.dad/anime/2668/yozakura-san-chi-no-daisakusen/episode/24 https://kuramanime.dad/adnime/:id/:slug/episode/:iteration
 */
-for (let i = 1; i <= config.totalEps; i++) {
+for (let i = 1; i <= config.latestEps; i++) {
   test(`scrape anime ${config.titleSave} on samehadaku episode ${i}`, { tag: ["@samehadaku"] }, async ({ page }) => {
     await test.step("Create m3u files on first iteration", async () => {
       if (i == 1) {
