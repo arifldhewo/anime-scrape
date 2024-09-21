@@ -5,7 +5,7 @@
   "scripts": {
     "spy": "npx playwright codegen samehadaku.email",
     "ui": "npx playwright test --ui",
-    "scrape-samehadaku": "npx playwright test --project chromium --workers 3 --grep \"@samehadaku\"",
+    "scrape-samehadaku": "npx playwright test --project chromium --workers 1  --grep \"@samehadaku\"",
     "scrape-kuramanime": "npx playwright test --project chromium --workers 1 --grep \"@kuramanime\"",
     "show-report": "npx playwright show-report"
   },

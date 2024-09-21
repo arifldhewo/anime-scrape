@@ -5,7 +5,7 @@ const config = {
   searchTitle: "Dungeon no Naka no Hito",
   titlePerEps: "Dungeon no Naka no Hito",
   titleSave: "Dungeon no Naka no Hito",
-  latestEps: 10,
+  latestEps: 11,
   streamService: "Krakenfiles",
 };
 
