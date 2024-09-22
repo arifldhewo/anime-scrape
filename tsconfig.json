@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    // Other options...
+    "baseUrl": ".", // This must be specified if "paths" is.
+    "paths": {
+      "@/*": ["./*"] // This mapping is relative to "baseUrl".
+    },
+    "resolveJsonModule": true,
+    "esModuleInterop": true
+  }
+}

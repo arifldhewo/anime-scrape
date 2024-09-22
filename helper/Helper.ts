@@ -1,4 +1,4 @@
-import { Page } from "@playwright/test";
+import { Locator, Page } from "@playwright/test";
 
 export default class Helper {
   page: Page;
@@ -13,6 +13,32 @@ export default class Helper {
     });
 
     return await req.json();
+  }
+
+  async getAPIResJSONByClick<T>(urlAPI: string, locator: Locator | null, first: boolean): Promise<T> {
+    const apiPromise = this.page.waitForResponse(urlAPI);
+    if (first) {
+      await this.page.goto("/");
+    } else if (locator) {
+      await locator.click();
+    }
+
+    const api = await apiPromise;
+
+    return await api.json();
+  }
+
+  async getAPIResJSONByGoto<T>(urlAPI: string, url: string | null): Promise<T> {
+    const apiPromise = this.page.waitForResponse(urlAPI);
+    if (url) {
+      await this.page.goto(url);
+    } else {
+      await this.page.goto("/");
+    }
+
+    const api = await apiPromise;
+
+    return await api.json();
   }
 
   getDate(): string {
