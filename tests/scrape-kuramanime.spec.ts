@@ -98,11 +98,13 @@ test("scrape kuramanime information release every 7PM", { tag: ["@kuramanime_upd
       html,
     };
 
-    await sgMail.send(mailOptions).catch((err) => console.log(err));
+    // await sgMail.send(mailOptions).catch((err) => console.log(err));
   });
 });
 
-const below27Eps = today.filter((data) => data.total_episodes <= 27);
+const below27Eps = today.filter((filter) => {
+  return filter.total_episodes <= 27 && filter.latest_episode <= 27;
+});
 
 below27Eps.map((data) => {
   test(`scrape anime ${data.title}`, { tag: ["@alot"] }, async ({ page }) => {
