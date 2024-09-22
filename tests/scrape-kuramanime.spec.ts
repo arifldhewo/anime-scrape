@@ -79,7 +79,9 @@ test("scrape kuramanime information release every 7PM", { tag: ["@kuramanime_upd
           </head>
           <body>
             <h1>Latest Anime Episodes</h1>
-            <h3> Today Date: ${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}</h3>
+            <h3> Today Date: ${date.getFullYear()}-${
+    date.getMonth() + 1
+  }-${date.getDate()}  ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}</h3>
             <table>
             <tr>
               <th> Title </th>
@@ -101,7 +103,7 @@ test("scrape kuramanime information release every 7PM", { tag: ["@kuramanime_upd
       html,
     };
 
-    // await sgMail.send(mailOptions).catch((err) => console.log(err));
+    await sgMail.send(mailOptions).catch((err) => console.log(err));
   });
 });
 
