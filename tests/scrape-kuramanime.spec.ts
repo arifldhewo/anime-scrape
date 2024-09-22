@@ -102,7 +102,9 @@ test("scrape kuramanime information release every 7PM", { tag: ["@kuramanime_upd
   });
 });
 
-today.map((data) => {
+const below27Eps = today.filter((data) => data.total_episodes <= 27);
+
+below27Eps.map((data) => {
   test(`scrape anime ${data.title}`, { tag: ["@alot"] }, async ({ page }) => {
     const helper = new Helper(page);
     await unlink(`./output/${data.slug}.m3u`).catch((err) => console.error(err));
