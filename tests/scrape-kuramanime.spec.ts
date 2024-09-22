@@ -98,7 +98,7 @@ test("scrape kuramanime information release every 7PM", { tag: ["@kuramanime_upd
       html,
     };
 
-    // await sgMail.send(mailOptions).catch((err) => console.log(err));
+    await sgMail.send(mailOptions).catch((err) => console.log(err));
   });
 });
 
