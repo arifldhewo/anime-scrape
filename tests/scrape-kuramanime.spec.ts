@@ -5,6 +5,7 @@ import { iQuickResAPI } from "@/Interface/kuramanime/iQuickResAPI";
 import sgMail from "@sendgrid/mail";
 import { writeFile, unlink } from "node:fs/promises";
 import today from "today.json";
+import { title } from "node:process";
 
 dotenv.config();
 const date = new Date();
@@ -104,26 +105,33 @@ const below27Eps = today.filter((filter) => {
 below27Eps.map((data) => {
   test(`scrape anime ${data.title}`, { tag: ["@kuramanime_video"] }, async ({ page }) => {
     const helper = new Helper(page);
-    await unlink(`./output/${data.slug}.m3u`).catch((err) => console.error(err));
 
-    await writeFile(`./output/${data.slug}.m3u`, "#EXTM3U", { flag: "a" }).catch((err) => console.error(err));
+    await test.step(`Create file for title ${data.title}`, async () => {
+      await unlink(`./output/${data.slug}.m3u`).catch((err) => console.error(err));
+
+      await writeFile(`./output/${data.slug}.m3u`, "#EXTM3U", { flag: "a" }).catch((err) => console.error(err));
+    });
 
     for (let i = data.posts.length - 1; i >= 0; i--) {
-      await helper.getAPIResJSONByGoto(
-        "https://kuramanime.dad/misc/post/count-views",
-        `https://kuramanime.dad/anime/${data.id}/${data.slug}/episode/${data.posts[i].episode}`
-      );
+      await test.step(`Visiting title ${title} on episode ${data.posts[i].episode}`, async () => {
+        await helper.getAPIResJSONByGoto(
+          "https://kuramanime.dad/misc/post/count-views",
+          `https://kuramanime.dad/anime/${data.id}/${data.slug}/episode/${data.posts[i].episode}`
+        );
 
-      await expect(page.locator("#player")).toBeVisible();
+        await expect(page.locator("#player")).toBeVisible();
+      });
 
-      await page
-        .locator("#source720")
-        .getAttribute("src")
-        .then((src) => {
-          writeFile(`./output/${data.slug}.m3u`, `\n#EXTINF:-1, ${data.title} - ${data.posts[i].episode}\n${src}`, {
-            flag: "a",
-          }).catch((err) => console.error(err));
-        });
+      await test.step(`Insert anime ${data.title} on m3u file`, async () => {
+        await page
+          .locator("#source720")
+          .getAttribute("src")
+          .then((src) => {
+            writeFile(`./output/${data.slug}.m3u`, `\n#EXTINF:-1, ${data.title} - ${data.posts[i].episode}\n${src}`, {
+              flag: "a",
+            }).catch((err) => console.error(err));
+          });
+      });
     }
   });
 });
