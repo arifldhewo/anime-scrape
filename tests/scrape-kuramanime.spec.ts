@@ -113,7 +113,7 @@ below27Eps.map((data) => {
     });
 
     for (let i = data.posts.length - 1; i >= 0; i--) {
-      await test.step(`Visiting title ${title} on episode ${data.posts[i].episode}`, async () => {
+      await test.step(`Visiting title ${data.title} on episode ${data.posts[i].episode}`, async () => {
         await helper.getAPIResJSONByGoto(
           "https://kuramanime.dad/misc/post/count-views",
           `https://kuramanime.dad/anime/${data.id}/${data.slug}/episode/${data.posts[i].episode}`
