@@ -5,3 +5,6 @@ node_modules/
 /playwright/.cache/
 /output/
 .env
+*.log
+*.sh
+today.json
