@@ -11,10 +11,9 @@ const date = new Date();
 if (process.env.SENDGRID_API_KEY) sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 let allInformation: any = [];
 
-let firstResponse: iQuickResAPI;
-test.beforeEach(`Get lattest anime from kuramanime`, async ({ page }) => {
+test("scrape kuramanime information release every 7PM", { tag: ["@kuramanime_update"] }, async ({ page }) => {
   const helper = new Helper(page);
-
+  let firstResponse: iQuickResAPI;
   await test.step("Get first page on kuramanime for today", async () => {
     firstResponse = await helper.reqGetResponseWithQueryParam<iQuickResAPI>("https://kuramanime.dad/quick/ongoing", {
       order_by: "updated",
@@ -22,10 +21,6 @@ test.beforeEach(`Get lattest anime from kuramanime`, async ({ page }) => {
       need_json: "true",
     });
   });
-});
-
-test("scrape kuramanime information release every 7PM", { tag: ["@kuramanime_update"] }, async ({ page }) => {
-  const helper = new Helper(page);
 
   const totalPages = firstResponse.animes.last_page;
 
