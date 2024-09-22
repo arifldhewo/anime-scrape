@@ -7,7 +7,7 @@
     "ui": "npx playwright test --ui",
     "scrape-samehadaku": "npx playwright test --project chromium --workers 1 --grep \"@samehadaku\"",
     "scrape-kuramanime": "npx playwright test --project chromium --workers 1 --grep \"@kuramanime\"",
-    "scrape-kurmanime_update": "npx playwright test --project chromium --workers 1 --grep \"@kuramanime_update\"",
+    "scrape-kuramanime_update": "npx playwright test --project chromium --workers 1 --grep \"@kuramanime_update\"",
     "show-report": "npx playwright show-report"
   },
   "keywords": [],
