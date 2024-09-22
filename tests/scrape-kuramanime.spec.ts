@@ -25,16 +25,13 @@ test.beforeEach(`Get lattest anime from kuramanime`, async ({ page }) => {
 });
 
 test("scrape kuramanime information release every 7PM", { tag: ["@kuramanime_update"] }, async ({ page }) => {
-  console.log(today);
   const helper = new Helper(page);
 
   const totalPages = firstResponse.animes.last_page;
 
   let td: string[] = [];
 
-  await unlink("today.json")
-    .then((info) => console.log(info))
-    .catch((err) => console.log(err));
+  await unlink("today.json").catch((err) => console.log(err));
 
   for (let i = 1; i <= totalPages; i++) {
     await test.step(`Scrape on page ${i}`, async () => {
@@ -63,9 +60,7 @@ test("scrape kuramanime information release every 7PM", { tag: ["@kuramanime_upd
     });
   }
 
-  await writeFile("today.json", JSON.stringify(allInformation), { flag: "a" })
-    .then((info) => console.log(info))
-    .catch((err) => console.log(err));
+  await writeFile("today.json", JSON.stringify(allInformation), { flag: "a" }).catch((err) => console.log(err));
 
   let tdFilter: string = "";
 
@@ -115,8 +110,6 @@ today.map((data) => {
     await writeFile(`./output/${data.slug}.m3u`, "#EXTM3U", { flag: "a" }).catch((err) => console.error(err));
 
     for (let i = data.posts.length - 1; i >= 0; i--) {
-      // console.log(`https://kuramanime.dad/anime/${data.id}/${data.slug}/episode/${data.posts[i].episode}`);
-
       await helper.getAPIResJSONByGoto(
         "https://kuramanime.dad/misc/post/count-views",
         `https://kuramanime.dad/anime/${data.id}/${data.slug}/episode/${data.posts[i].episode}`
@@ -128,7 +121,6 @@ today.map((data) => {
         .locator("#source720")
         .getAttribute("src")
         .then((src) => {
-          console.log(src);
           writeFile(`./output/${data.slug}.m3u`, `\n#EXTINF:-1, ${data.title} - ${data.posts[i].episode}\n${src}`, {
             flag: "a",
           }).catch((err) => console.error(err));
