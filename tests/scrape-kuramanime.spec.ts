@@ -99,7 +99,12 @@ test("scrape kuramanime information release every 7PM", { tag: ["@kuramanime_upd
 });
 
 const below27Eps = today.filter((filter) => {
-  return filter.total_episodes <= 27 && filter.latest_episode <= 27;
+  return (
+    filter.total_episodes <= 27 &&
+    filter.latest_episode <= 27 &&
+    !filter.is_wet &&
+    parseInt(filter.latest_post_at.slice(0, 4)) >= date.getFullYear()
+  );
 });
 
 below27Eps.map((data) => {
