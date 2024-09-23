@@ -5,12 +5,12 @@ import { iQuickResAPI } from "@/Interface/kuramanime/iQuickResAPI";
 import sgMail from "@sendgrid/mail";
 import { writeFile, unlink } from "node:fs/promises";
 import today from "today.json";
-import { title } from "node:process";
 
 dotenv.config();
 const date = new Date();
 if (process.env.SENDGRID_API_KEY) sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 let allInformation: any = [];
+let mailOptions: any;
 
 test("scrape kuramanime information release every 7PM", { tag: ["@kuramanime_update"] }, async ({ page }) => {
   const helper = new Helper(page);
@@ -87,14 +87,12 @@ test("scrape kuramanime information release every 7PM", { tag: ["@kuramanime_upd
       `;
 
   await test.step(`Sending to email ${process.env.RECIPIENT_EMAIL}`, async () => {
-    const mailOptions = {
+    mailOptions = {
       to: `${process.env.RECIPIENT_EMAIL}`,
       from: `${process.env.SENDER_EMAIL}`,
       subject: "Latest Episodes Anime",
       html,
     };
-
-    await sgMail.send(mailOptions).catch((err) => console.log(err));
   });
 });
 
@@ -138,5 +136,16 @@ below27Eps.map((data) => {
           });
       });
     }
+
+    mailOptions = {
+      to: `${process.env.RECIPIENT_EMAIL}`,
+      from: `${process.env.SENDER_EMAIL}`,
+      subject: "Scrape Kuramanime is Complete",
+      text: "Scraping Complete",
+    };
   });
+});
+
+test.afterAll(`Send Email on Last Tests`, async () => {
+  await sgMail.send(mailOptions).catch((err) => console.log(err));
 });
