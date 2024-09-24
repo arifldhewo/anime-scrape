@@ -1,6 +1,6 @@
 import { Locator, Page } from "@playwright/test";
 
-export default class Helper {
+export class Helper {
   page: Page;
 
   constructor(page: Page) {
@@ -40,26 +40,44 @@ export default class Helper {
 
     return await api.json();
   }
+}
 
-  getDate(): string {
-    const date = new Date();
-    const allMonths: string[] = [
-      "Januari",
-      "Februari",
-      "Maret",
-      "April",
-      "May",
-      "June",
-      "Juli",
-      "Agustus",
-      "September",
-      "Oktober",
-      "November",
-      "Desember",
-    ];
+export function getDate(): string {
+  const date = new Date();
+  const allMonths: string[] = [
+    "Januari",
+    "Februari",
+    "Maret",
+    "April",
+    "May",
+    "June",
+    "Juli",
+    "Agustus",
+    "September",
+    "Oktober",
+    "November",
+    "Desember",
+  ];
 
-    const currentMonth = allMonths[date.getMonth()];
+  const currentMonth = allMonths[date.getMonth()];
 
-    return `${date.getDate()}-${currentMonth}-${date.getFullYear()}`;
+  return `${date.getDate()}-${currentMonth}-${date.getFullYear()}`;
+}
+
+export function getCurrentDate(): string {
+  const date = new Date();
+
+  let currentDay: string = String(date.getDate());
+  let currentMonth: string = String(date.getMonth() + 1);
+  let currentYear: string = String(date.getFullYear());
+
+  if (currentDay.length === 1) {
+    currentDay = `0${currentDay}`;
   }
+
+  if (currentMonth.length === 1) {
+    currentMonth = `0${currentMonth}`;
+  }
+
+  return `${currentYear}-${currentMonth}-${currentDay}`;
 }

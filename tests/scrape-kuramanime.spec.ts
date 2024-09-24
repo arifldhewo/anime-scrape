@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import Helper from "@/helper/Helper";
+import { getCurrentDate, Helper } from "@/helper/Helper";
 import dotenv from "dotenv";
 import { iQuickResAPI } from "@/Interface/kuramanime/iQuickResAPI";
 import sgMail from "@sendgrid/mail";
@@ -70,9 +70,7 @@ test("scrape kuramanime information release every 7PM", { tag: ["@kuramanime_upd
           </head>
           <body>
             <h1>Latest Anime Episodes</h1>
-            <h3> Today Date: ${date.getFullYear()}-${
-    date.getMonth() + 1
-  }-${date.getDate()}  ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}</h3>
+            <h3> Today Updates: ${getCurrentDate()}</h3>
             <table>
             <tr>
               <th> Title </th>
@@ -97,11 +95,10 @@ test("scrape kuramanime information release every 7PM", { tag: ["@kuramanime_upd
 });
 
 const below27Eps = today.filter((filter) => {
+  let firstSplit = filter.latest_post_at.split(" ");
+
   return (
-    filter.total_episodes <= 27 &&
-    filter.latest_episode <= 27 &&
-    !filter.is_wet &&
-    parseInt(filter.latest_post_at.slice(0, 4)) >= date.getFullYear()
+    filter.total_episodes <= 27 && filter.latest_episode <= 27 && !filter.is_wet && firstSplit[0] === getCurrentDate()
   );
 });
 
