@@ -1,6 +1,6 @@
 import { getCurrentDate, Helper } from "@/helper/Helper";
 import { iQuickResAPI } from "@/Interface/kuramanime/iQuickResAPI";
-import { firefox } from "playwright-extra";
+import { chromium } from "playwright-extra";
 import { writeFile, unlink } from "fs/promises";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import sgMail from "@sendgrid/mail";
@@ -14,10 +14,10 @@ let allInformation: any = [];
 let mailOptions: any;
 
 // Add the plugin to playwright (any number of plugins can be added)
-firefox.use(StealthPlugin());
+chromium.use(StealthPlugin());
 
 // ...(the rest of the quickstart code example is the same)
-firefox.launch({ headless: true }).then(async (browser) => {
+chromium.launch({ headless: true }).then(async (browser) => {
   const page = await browser.newPage();
 
   const helper = new Helper(page);
@@ -106,7 +106,7 @@ firefox.launch({ headless: true }).then(async (browser) => {
     html,
   };
 
-  await sgMail.send(mailOptions).catch((err) => console.log(err));
+  // await sgMail.send(mailOptions).catch((err) => console.log(err));
 
   console.log("Sending email");
 
