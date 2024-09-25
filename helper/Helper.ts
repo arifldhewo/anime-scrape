@@ -12,7 +12,7 @@ export class Helper {
       params: queryParams,
     });
 
-    return await req.json();
+    return await req.json().catch((err) => console.log());
   }
 
   async getAPIResJSONByClick<T>(urlAPI: string, locator: Locator | null, first: boolean): Promise<T> {
