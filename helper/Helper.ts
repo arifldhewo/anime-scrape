@@ -3,7 +3,7 @@ import { Locator, Page } from "@playwright/test";
 export class Helper {
   page: Page;
 
-  constructor(page: Page) {
+  constructor(page: any) {
     this.page = page;
   }
 

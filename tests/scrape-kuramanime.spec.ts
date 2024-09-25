@@ -5,7 +5,6 @@ import { iQuickResAPI } from "@/Interface/kuramanime/iQuickResAPI";
 import sgMail from "@sendgrid/mail";
 import { writeFile, unlink } from "node:fs/promises";
 import today from "today.json";
-import { error } from "node:console";
 
 dotenv.config();
 const date = new Date();
