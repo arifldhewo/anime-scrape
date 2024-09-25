@@ -5,6 +5,7 @@ import { iQuickResAPI } from "@/Interface/kuramanime/iQuickResAPI";
 import sgMail from "@sendgrid/mail";
 import { writeFile, unlink } from "node:fs/promises";
 import today from "today.json";
+import { error } from "node:console";
 
 dotenv.config();
 const date = new Date();
@@ -15,13 +16,15 @@ let mailOptions: any;
 test("scrape kuramanime information release every 7PM", { tag: ["@kuramanime_update"] }, async ({ page }) => {
   const helper = new Helper(page);
   let firstResponse: iQuickResAPI;
-  await test.step("Get first page on kuramanime for today", async () => {
-    firstResponse = await helper.reqGetResponseWithQueryParam<iQuickResAPI>("https://kuramanime.dad/quick/ongoing", {
-      order_by: "updated",
-      page: "1",
-      need_json: "true",
-    });
-  });
+  await test
+    .step("Get first page on kuramanime for today", async () => {
+      firstResponse = await helper.reqGetResponseWithQueryParam<iQuickResAPI>("https://kuramanime.dad/quick/ongoing", {
+        order_by: "updated",
+        page: "1",
+        need_json: "true",
+      });
+    })
+    .catch((err) => console.log(err));
 
   const totalPages = firstResponse.animes.last_page;
 
