@@ -7,12 +7,12 @@ export class Helper {
     this.page = page;
   }
 
-  async reqGetResponseWithQueryParam<T>(url: string, queryParams: Record<string, string>): Promise<T> {
+  async reqGetResponseWithQueryParam<T>(url: string, queryParams: Record<string, string>): Promise<any> {
     const req = await this.page.request.get(url, {
       params: queryParams,
     });
 
-    return await req.json().catch((err) => console.log(err));
+    return await req.headers();
   }
 
   async getAPIResJSONByClick<T>(urlAPI: string, locator: Locator | null, first: boolean): Promise<T> {
