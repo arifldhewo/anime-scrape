@@ -12,7 +12,7 @@ export class Helper {
       params: queryParams,
     });
 
-    console.log(await req.text());
+    return await req.json();
   }
 
   async getAPIResJSONByClick<T>(urlAPI: string, locator: Locator | null, first: boolean): Promise<T> {
