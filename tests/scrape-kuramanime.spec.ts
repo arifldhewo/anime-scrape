@@ -16,15 +16,13 @@ let mailOptions: any;
 test("scrape kuramanime information release every 7PM", { tag: ["@kuramanime_update"] }, async ({ page }) => {
   const helper = new Helper(page);
   let firstResponse: iQuickResAPI;
-  await test
-    .step("Get first page on kuramanime for today", async () => {
-      firstResponse = await helper.reqGetResponseWithQueryParam<iQuickResAPI>("https://kuramanime.dad/quick/ongoing", {
-        order_by: "updated",
-        page: "1",
-        need_json: "true",
-      });
-    })
-    .catch((err) => console.log(err));
+  await test.step("Get first page on kuramanime for today", async () => {
+    firstResponse = await helper.reqGetResponseWithQueryParam<iQuickResAPI>("https://kuramanime.dad/quick/ongoing", {
+      order_by: "updated",
+      page: "1",
+      need_json: "true",
+    });
+  });
 
   const totalPages = firstResponse.animes.last_page;
 
