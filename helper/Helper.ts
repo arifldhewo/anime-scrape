@@ -7,7 +7,10 @@ export class Helper {
     this.page = page;
   }
 
-  async reqGetResponseWithQueryParam<T>(url: string, queryParams: Record<string, string>): Promise<any> {
+  async reqGetResponseWithQueryParam<T>(
+    url: string,
+    queryParams: Record<string, string>,
+  ): Promise<any> {
     const req = await this.page.request.get(url, {
       params: queryParams,
     });
@@ -15,7 +18,11 @@ export class Helper {
     return await req.json();
   }
 
-  async getAPIResJSONByClick<T>(urlAPI: string, locator: Locator | null, first: boolean): Promise<T> {
+  async getAPIResJSONByClick<T>(
+    urlAPI: string,
+    locator: Locator | null,
+    first: boolean,
+  ): Promise<T> {
     const apiPromise = this.page.waitForResponse(urlAPI);
     if (first) {
       await this.page.goto("/");
