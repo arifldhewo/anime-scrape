@@ -21,7 +21,7 @@ test.describe("Kuramanime Scrape", () => {
 				const searchTitle = process.env.SEARCH_ANIME_TITLE.replaceAll("+", " ").toLowerCase();
 
 				if (lowerCaseTitle.includes(searchTitle)) {
-					return data.id;
+					return data;
 				}
 			});
 
@@ -29,7 +29,11 @@ test.describe("Kuramanime Scrape", () => {
 				throw new Error("Title is more have than 1 title, please make it specific");
 			}
 
-			fs.writeFileSync(`data/${filteredAnime[0].title}.m3u`, "#EXTM3U", { flag: "a" });
+			if (filteredAnime.length === 0) {
+				throw new Error("Title not found");
+			}
+
+			fs.writeFileSync(`data/${filteredAnime[0].slug}.m3u`, "#EXTM3U", { flag: "a" });
 
 			await page.goto(
 				`${process.env.KURAMANIME_BASE_URL}/anime/${filteredAnime[0].id}/${filteredAnime[0].slug}`,
@@ -54,7 +58,7 @@ test.describe("Kuramanime Scrape", () => {
 				await epsPage.close();
 
 				fs.writeFileSync(
-					`data/${filteredAnime[0].title}.m3u`,
+					`data/${filteredAnime[0].slug}.m3u`,
 					`
 #EXTINF:-1, ${filteredAnime[0].title} - Episode ${i}
 ${srcVideoAttribute}
