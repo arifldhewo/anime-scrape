@@ -17,10 +17,9 @@ test.describe("Kuramanime Scrape", () => {
 			const searchJSON: iQuickResAPI = await searchResponse.json();
 
 			const filteredAnime = searchJSON.animes.data.filter((data) => {
-				const lowerCaseTitle = data.title.toLowerCase();
-				const searchTitle = process.env.SEARCH_ANIME_TITLE.replaceAll("+", " ").toLowerCase();
+				const searchTitle = process.env.SEARCH_ANIME_TITLE.replaceAll("+", "-").toLowerCase();
 
-				if (lowerCaseTitle.includes(searchTitle)) {
+				if (data.slug.includes(searchTitle)) {
 					return data;
 				}
 			});
