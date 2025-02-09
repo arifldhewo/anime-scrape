@@ -97,7 +97,6 @@ test.describe("Kuramanime Scrape", () => {
 
 			if (fileM3U.includes(`Episode ${filteredAnimeByLatestEpsLessThan24[i].latest_episode}`)) {
 				console.log("Gk Lanjut Eksekusi untuk title: ", filteredAnimeByLatestEpsLessThan24[i].title);
-				continue;
 			} else {
 				console.log("Lanjut Eksekusi untuk title: ", filteredAnimeByLatestEpsLessThan24[i].title);
 				const detailPagePromise = page.waitForEvent("popup");
@@ -110,7 +109,7 @@ test.describe("Kuramanime Scrape", () => {
 					.locator("#source720")
 					.getAttribute("src", { timeout: 1000 * 30 });
 				await detailPage.close();
-				fs.writeFileSync(
+				fs.appendFileSync(
 					`data/${filteredAnimeByLatestEpsLessThan24[i].slug}.m3u`,
 					`\n#EXTINF:-1, ${filteredAnimeByLatestEpsLessThan24[i].title} - Episode ${filteredAnimeByLatestEpsLessThan24[i].latest_episode}\n${srcVideoAttribute}`,
 					{ flag: "a" },
