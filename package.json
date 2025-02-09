@@ -5,10 +5,10 @@
 	"scripts": {
 		"spy": "npx playwright codegen kuramanime.dad",
 		"ui": "npx playwright test --ui",
-		"scrape-samehadaku": "npx playwright test --project chromium --workers 1 --grep \"@samehadaku\"",
-		"scrape-kuramanime-video": "npx playwright test --project chromium --grep \"@kuramanime_video\"",
-		"scrape-kuramanime-daily": "npx playwright test --project chromium --workers 1 --grep \"@kuramanime_daily\"",
-		"scrape-kuramanime-search": "npx playwright test --project chromium --workers 1 --grep \"@kuramanime_search\"",
+		"samehadaku": "npx playwright test --project chromium --workers 1 --grep \"@samehadaku\"",
+		"kuramanime-video": "npx playwright test --project chromium --grep \"@kuramanime_video\"",
+		"kuramanime-daily": "npx playwright test --project chromium --workers 1 --grep \"@kuramanime_daily\"",
+		"kuramanime-search": "npx playwright test --project chromium --workers 1 --grep \"@kuramanime_search\"",
 		"show-report": "npx playwright show-report"
 	},
 	"keywords": [],
