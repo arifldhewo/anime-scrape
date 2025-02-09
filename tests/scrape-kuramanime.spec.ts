@@ -52,16 +52,13 @@ test.describe("Kuramanime Scrape", () => {
 					.locator("#source720")
 					.getAttribute("src", { timeout: 1000 * 30 });
 
-				console.log("SrcVideoAttribute: ", srcVideoAttribute);
+				console.log(`save video link for eps: ${i} \n ${srcVideoAttribute} \n`);
 
 				await epsPage.close();
 
 				fs.writeFileSync(
 					`data/${filteredAnime[0].slug}.m3u`,
-					`
-#EXTINF:-1, ${filteredAnime[0].title} - Episode ${i}
-${srcVideoAttribute}
-`,
+					`\n#EXTINF:-1, ${filteredAnime[0].title} - Episode ${i}\n${srcVideoAttribute}`,
 					{ flag: "a" },
 				);
 			}
@@ -79,14 +76,30 @@ ${srcVideoAttribute}
 
 		const filteredAnimeByJapan = resJSON.animes.data.filter((data) => data.country_code === "JP");
 
-		const filteredAnimeByTotalEpsLessThan24 = filteredAnimeByJapan.filter(
-			(data) => data.total_episodes <= 24,
-		);
-
-		const filteredAnimeByLatestEpsLessThan24 = filteredAnimeByTotalEpsLessThan24.filter(
+		const filteredAnimeByLatestEpsLessThan24 = filteredAnimeByJapan.filter(
 			(data) => data.latest_episode <= 24,
 		);
 
-		console.log(filteredAnimeByLatestEpsLessThan24);
+		await page.goto(`${process.env.KURAMANIME_BASE_URL}`);
+
+		for (let i = 0; i < filteredAnimeByLatestEpsLessThan24.length; i++) {
+			if (!fs.existsSync(`/data/${filteredAnimeByLatestEpsLessThan24[i].slug}`)) {
+				fs.writeFileSync(`/data/${filteredAnimeByLatestEpsLessThan24[i].slug}`, "#EXTM3U\n");
+			}
+
+			const fileM3U: string = Buffer.from(
+				fs.readFileSync(`data/${filteredAnimeByLatestEpsLessThan24[i].slug}`),
+			).toString();
+
+			// if(fileM3U.includes(``))
+
+			const detailPagePromise = page.waitForEvent("popup");
+
+			await page.getByText(`${filteredAnimeByLatestEpsLessThan24[i].title}`).click();
+
+			const detailPage = await detailPagePromise;
+
+			await detailPage.locator("#source720").getAttribute("src", { timeout: 1000 * 30 });
+		}
 	});
 });
