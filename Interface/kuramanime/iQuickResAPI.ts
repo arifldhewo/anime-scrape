@@ -32,6 +32,7 @@ interface AnimesData {
 	score: number | null;
 	votes: number;
 	country_code: string;
+	latest_episode: number;
 	latest_post_at: string | null;
 	posts: PostsData[];
 }

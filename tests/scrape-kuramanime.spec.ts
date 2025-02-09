@@ -7,17 +7,17 @@ dotenv.config();
 
 test.describe("Kuramanime Scrape", () => {
 	test(
-		`Scrape anime with title ${process.env.SEARCH_ANIME_TITLE}`,
-		{ tag: ["@kuramanime_update"] },
+		`Scrape anime with title ${process.env.KURAMANIME_SEARCH_ANIME_TITLE}`,
+		{ tag: ["@kuramanime_search"] },
 		async ({ page }) => {
 			const searchResponse: APIResponse = await page.request.get(
-				`${process.env.KURAMANIME_BASE_URL}/anime?search=${process.env.SEARCH_ANIME_TITLE}&need_json=true`,
+				`${process.env.KURAMANIME_BASE_URL}/anime?search=${process.env.KURAMANIME_SEARCH_ANIME_TITLE}&need_json=true`,
 			);
 
 			const searchJSON: iQuickResAPI = await searchResponse.json();
 
 			const filteredAnime = searchJSON.animes.data.filter((data) => {
-				const searchTitle = process.env.SEARCH_ANIME_TITLE.replaceAll("+", "-").toLowerCase();
+				const searchTitle = process.env.KURAMANIME_SEARCH_ANIME_TITLE.replaceAll("+", "-").toLowerCase();
 
 				if (data.slug.includes(searchTitle)) {
 					return data;
@@ -69,4 +69,24 @@ ${srcVideoAttribute}
 			await page.close();
 		},
 	);
+
+	test("Kuramanime TV Series Daily", { tag: ["@kuramanime_daily"] }, async ({ page }) => {
+		const response = await page.request.get(
+			`${process.env.KURAMANIME_BASE_URL}/quick/ongoing?order_by=updated&page=1&need_json=true`,
+		);
+
+		const resJSON: iQuickResAPI = await response.json();
+
+		const filteredAnimeByJapan = resJSON.animes.data.filter((data) => data.country_code === "JP");
+
+		const filteredAnimeByTotalEpsLessThan24 = filteredAnimeByJapan.filter(
+			(data) => data.total_episodes <= 24,
+		);
+
+		const filteredAnimeByLatestEpsLessThan24 = filteredAnimeByTotalEpsLessThan24.filter(
+			(data) => data.latest_episode <= 24,
+		);
+
+		console.log(filteredAnimeByLatestEpsLessThan24);
+	});
 });
