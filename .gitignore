@@ -9,3 +9,4 @@ node_modules/
 *.sh
 today.json
 /data
+/outputm3u
