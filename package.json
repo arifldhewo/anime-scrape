@@ -6,9 +6,10 @@
 		"spy": "npx playwright codegen kuramanime.dad",
 		"ui": "npx playwright test --ui",
 		"samehadaku": "npx playwright test --project chromium --workers 1 --grep \"@samehadaku\"",
+		"kuramanime-iniate": "npx playwright test --project chromium --workers 1 --grep \"@kuramanime_initiate\"",
 		"kuramanime-video": "npx playwright test --project chromium --grep \"@kuramanime_video\"",
 		"kuramanime-daily": "npx playwright test --project chromium --workers 1 --grep \"@kuramanime_daily\"",
-		"kuramanime-search": "npx playwright test --project chromium --workers 1 --grep \"@kuramanime_search\"",
+		"kuramanime-search": "npm run kuramanime-iniate && npx playwright test --project chromium --workers 4 --grep \"@kuramanime_search\"",
 		"show-report": "npx playwright show-report"
 	},
 	"keywords": [],

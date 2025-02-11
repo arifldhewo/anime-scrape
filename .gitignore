@@ -8,5 +8,4 @@ node_modules/
 *.log
 *.sh
 today.json
-/data
 /outputm3u
