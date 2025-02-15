@@ -1,7 +1,7 @@
 import * as dotenv from "dotenv";
 import { test } from "@/fixture/kuramanime";
 import { iQuickResAPI } from "@/Interface/kuramanime/iQuickResAPI";
-import fs, { existsSync } from "fs";
+import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { iQuickResSearchAPI } from "@/Interface/kuramanime/iQuickResSearchAPI";
 
 dotenv.config();
@@ -11,7 +11,7 @@ test.describe("Kuramanime Scrape", () => {
 		console.log("for running global setup only");
 
 		const search: iQuickResSearchAPI = JSON.parse(
-			Buffer.from(fs.readFileSync("data/search.json")).toString(),
+			Buffer.from(readFileSync("data/searchResult.json")).toString(),
 		);
 
 		if (search.animes.data.length === 0) {
@@ -19,7 +19,9 @@ test.describe("Kuramanime Scrape", () => {
 		}
 	});
 
-	const iniate: iQuickResSearchAPI = JSON.parse(Buffer.from(fs.readFileSync("data/search.json")).toString());
+	const iniate: iQuickResSearchAPI = JSON.parse(
+		Buffer.from(readFileSync("data/searchResult.json")).toString(),
+	);
 
 	if (iniate.animes?.data?.length !== undefined) {
 		for (let i = 0; i < iniate.animes.data.length; i++) {
@@ -28,15 +30,15 @@ test.describe("Kuramanime Scrape", () => {
 				{ tag: ["@kuramanime_search"] },
 				async ({ page }) => {
 					const search: iQuickResSearchAPI = JSON.parse(
-						Buffer.from(fs.readFileSync("data/search.json")).toString(),
+						Buffer.from(readFileSync("data/searchResult.json")).toString(),
 					);
 
 					if (!existsSync("outputm3u")) {
-						fs.mkdirSync("outputm3u");
+						mkdirSync("outputm3u");
 					}
 
-					if (!fs.existsSync(`outputm3u/${search.animes.data[i].slug}.m3u`)) {
-						fs.writeFileSync(`outputm3u/${search.animes.data[i].slug}.m3u`, "#EXTM3U", { flag: "a" });
+					if (!existsSync(`outputm3u/${search.animes.data[i].slug}.m3u`)) {
+						writeFileSync(`outputm3u/${search.animes.data[i].slug}.m3u`, "#EXTM3U", { flag: "a" });
 					}
 
 					await page.goto(
@@ -78,11 +80,11 @@ test.describe("Kuramanime Scrape", () => {
 						await epsPage.close();
 
 						const readM3U: string = Buffer.from(
-							fs.readFileSync(`outputm3u/${search.animes.data[i].slug}.m3u`),
+							readFileSync(`outputm3u/${search.animes.data[i].slug}.m3u`),
 						).toString();
 
 						if (!readM3U.includes(`Episode ${j}`)) {
-							fs.writeFileSync(
+							writeFileSync(
 								`outputm3u/${search.animes.data[i].slug}.m3u`,
 								`\n#EXTINF:-1, ${search.animes.data[i].title} - Episode ${j}\n${srcVideoAttribute}`,
 								{ flag: "a" },
@@ -97,7 +99,7 @@ test.describe("Kuramanime Scrape", () => {
 
 					await page.close();
 
-					fs.writeFileSync("data/search.json", "{}");
+					writeFileSync("data/searchResult.json", "{}");
 				},
 			);
 		}
@@ -105,7 +107,7 @@ test.describe("Kuramanime Scrape", () => {
 
 	test("Kuramanime TV Series Daily", { tag: ["@kuramanime_daily"] }, async ({ page }) => {
 		if (!existsSync("outputm3u")) {
-			fs.mkdirSync("outputm3u");
+			mkdirSync("outputm3u");
 		}
 
 		const response = await page.request.get(
@@ -125,14 +127,14 @@ test.describe("Kuramanime Scrape", () => {
 		await page.getByText("Lihat Semua").first().click();
 
 		for (let i = 0; i < filteredAnimeByLatestEpsLessThan24.length; i++) {
-			if (!fs.existsSync(`outputm3u/${filteredAnimeByLatestEpsLessThan24[i].slug}.m3u`)) {
-				fs.writeFileSync(`outputm3u/${filteredAnimeByLatestEpsLessThan24[i].slug}.m3u`, "#EXTM3U", {
+			if (!existsSync(`outputm3u/${filteredAnimeByLatestEpsLessThan24[i].slug}.m3u`)) {
+				writeFileSync(`outputm3u/${filteredAnimeByLatestEpsLessThan24[i].slug}.m3u`, "#EXTM3U", {
 					flag: "a",
 				});
 			}
 
 			const fileM3U: string = Buffer.from(
-				fs.readFileSync(`outputm3u/${filteredAnimeByLatestEpsLessThan24[i].slug}.m3u`),
+				readFileSync(`outputm3u/${filteredAnimeByLatestEpsLessThan24[i].slug}.m3u`),
 			).toString();
 
 			if (fileM3U.includes(`Episode ${filteredAnimeByLatestEpsLessThan24[i].latest_episode}`)) {
@@ -159,7 +161,7 @@ test.describe("Kuramanime Scrape", () => {
 
 				await detailPage.close();
 
-				fs.appendFileSync(
+				appendFileSync(
 					`outputm3u/${filteredAnimeByLatestEpsLessThan24[i].slug}.m3u`,
 					`\n#EXTINF:-1, ${filteredAnimeByLatestEpsLessThan24[i].title} - Episode ${filteredAnimeByLatestEpsLessThan24[i].latest_episode}\n${srcVideoAttribute}`,
 					{ flag: "a" },

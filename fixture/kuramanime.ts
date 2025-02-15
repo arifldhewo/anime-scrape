@@ -1,8 +1,8 @@
 import { test as base, Page, APIResponse } from "@playwright/test";
-import fs from "fs";
+import { writeFileSync, existsSync, mkdirSync, readFileSync } from "fs";
 import * as dotenv from "dotenv";
 import { iQuickResSearchAPI } from "@/Interface/kuramanime/iQuickResSearchAPI";
-dotenv.config();
+import { config } from "@/config/config";
 
 type Kuramanime = {
 	page: Page;
@@ -10,17 +10,21 @@ type Kuramanime = {
 
 export const test = base.extend<Kuramanime>({
 	page: async ({ page }, use) => {
-		if (!fs.existsSync(`data`)) {
-			fs.mkdirSync(`data`);
+		if (!existsSync(`data`)) {
+			mkdirSync(`data`);
 		}
 
+		const readJSON: Record<string, any> = JSON.parse(
+			Buffer.from(readFileSync(`data/search.json`)).toString(),
+		);
+
 		const searchResponse: APIResponse = await page.request.get(
-			`${process.env.KURAMANIME_BASE_URL}/anime?search=${process.env.KURAMANIME_SEARCH_ANIME_TITLE}&need_json=true`,
+			`${config.kuramanimeBaseURL}/anime?search=${readJSON.searchTitle}&need_json=true`,
 		);
 
 		const searchJSON: iQuickResSearchAPI = await searchResponse.json();
 
-		fs.writeFileSync(`data/search.json`, JSON.stringify(searchJSON));
+		writeFileSync(`data/searchResult.json`, JSON.stringify(searchJSON));
 
 		use(page);
 	},
