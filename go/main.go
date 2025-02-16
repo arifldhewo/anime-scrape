@@ -67,14 +67,17 @@ func main() {
         panic(err);
     }
 
-    cmd := exec.Command("cmd", "/C", "kuramanime_search.bat");
+    cmd := exec.Command("npm", "run", "kuramanime-search");
 
-    output, err := cmd.CombinedOutput();
+    cmd.Stdout = os.Stdout;
+    cmd.Stderr = os.Stderr;
+
+    err = cmd.Run();
 
     if err != nil {
         fmt.Println("Error on running CMD: ", err);
         panic(err);
     }
 
-    fmt.Println(string(output));
+    fmt.Println("Playwright complete");
 }
