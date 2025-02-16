@@ -1,6 +1,5 @@
 import { test as base, Page, APIResponse } from "@playwright/test";
 import { writeFileSync, existsSync, mkdirSync, readFileSync } from "fs";
-import * as dotenv from "dotenv";
 import { iQuickResSearchAPI } from "@/Interface/kuramanime/iQuickResSearchAPI";
 import { config } from "@/config/config";
 

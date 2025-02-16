@@ -49,7 +49,7 @@ test.describe("Kuramanime Scrape", () => {
 					);
 
 					for (let j = 1; j <= search.animes.data[i].posts.length; j++) {
-						if (j > search.animes.data[i].total_episodes) {
+						if (j > search.animes.data[i].posts.length) {
 							break;
 						}
 
