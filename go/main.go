@@ -23,7 +23,7 @@ func main() {
         fmt.Println("[2] Kuramanime Search");
         fmt.Print("Input: ");
 
-        _, err := fmt.Scan(&inputType);
+        _, err := fmt.Scanln(&inputType);
 
         if err != nil {
             fmt.Println("Error on Get Input Type: ", err);
@@ -39,9 +39,9 @@ func main() {
         } 
     }
 
-    if (inputType == 2) {
-        var inputAnimeTitle string;
-    
+    fmt.Println("Agka Input nya dah ya: ",inputType)
+
+    if (inputType == 2) {    
         path, err := os.Getwd();
     
         if err != nil {
@@ -68,8 +68,11 @@ func main() {
         err = json.Unmarshal(byteValue, &search);
     
         reader := bufio.NewReader(os.Stdin);
+
+        var inputAnimeTitle string;
     
-        fmt.Print("Search anime that you want scrape on kuramanime: \n");
+        fmt.Println("Search anime that you want scrape on kuramanime: ");
+        fmt.Print("Input: ")
     
         inputAnimeTitle, _ = reader.ReadString('\n');
     
