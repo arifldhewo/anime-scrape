@@ -9,23 +9,11 @@
 
 ##### After successfully install all above requirement
 
-Please make a file with .env
+1. Open main.exe
 
-and fill it with
+2. and type 1 or 2
 
-KURAMANIME_BASE_URL=https://v6.kuramanime.run
-KURAMANIME_SEARCH_ANIME_TITLE=write+in+format+like+this
+3. 1 is for daily anime that on page 1
+4. 2 is for specific search on kuramanime
 
-e.g write with format like below
-
-- ore+dake+level+up
-- overlord
--
-
-##### After that run this command on cli
-
-- `npm run kuramanime_search`
-
-##### For only get the newest update on kuramanime use command
-
-- `npm run kuramanime_daily`
+5. after that enter, and wait until the process is completed
