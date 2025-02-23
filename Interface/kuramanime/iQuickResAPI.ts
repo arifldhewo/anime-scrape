@@ -18,7 +18,7 @@ interface Animes {
 	total: number;
 }
 
-interface AnimesData {
+export interface AnimesData {
 	id: number;
 	title: string;
 	slug: string;

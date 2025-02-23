@@ -39,8 +39,6 @@ func main() {
         } 
     }
 
-    fmt.Println("Agka Input nya dah ya: ",inputType)
-
     if (inputType == 2) {    
         path, err := os.Getwd();
     

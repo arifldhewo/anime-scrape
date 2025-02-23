@@ -1,7 +1,7 @@
 import * as dotenv from "dotenv";
-import { test } from "@/fixture/kuramanime";
-import { iQuickResAPI } from "@/Interface/kuramanime/iQuickResAPI";
-import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
+import { test } from "@playwright/test";
+import { AnimesData } from "@/Interface/kuramanime/iQuickResAPI";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { iQuickResSearchAPI } from "@/Interface/kuramanime/iQuickResSearchAPI";
 
 dotenv.config();
@@ -19,14 +19,14 @@ test.describe("Kuramanime Scrape", () => {
 		}
 	});
 
-	const iniate: iQuickResSearchAPI = JSON.parse(
+	const iniateSearch: iQuickResSearchAPI = JSON.parse(
 		Buffer.from(readFileSync("data/searchResult.json")).toString(),
 	);
 
-	if (iniate.animes?.data?.length !== undefined) {
-		for (let i = 0; i < iniate.animes.data.length; i++) {
+	if (iniateSearch.animes?.data?.length !== undefined) {
+		for (let i = 0; i < iniateSearch.animes.data.length; i++) {
 			test(
-				`Scrape anime with title ${iniate.animes.data[i].title}`,
+				`Scrape anime with title ${iniateSearch.animes.data[i].title}`,
 				{ tag: ["@kuramanime_search"] },
 				async ({ page }) => {
 					const search: iQuickResSearchAPI = JSON.parse(
@@ -49,9 +49,7 @@ test.describe("Kuramanime Scrape", () => {
 					);
 
 					for (let j = 1; j <= search.animes.data[i].posts.length; j++) {
-						if (j > search.animes.data[i].posts.length) {
-							break;
-						}
+						if (j > search.animes.data[i].posts.length) break;
 
 						await page.locator("#episodeLists").click();
 
@@ -105,72 +103,74 @@ test.describe("Kuramanime Scrape", () => {
 		}
 	}
 
-	test("Kuramanime TV Series Daily", { tag: ["@kuramanime_daily"] }, async ({ page }) => {
-		if (!existsSync("outputm3u")) {
-			mkdirSync("outputm3u");
+	const iniateDaily: AnimesData[] = JSON.parse(Buffer.from(readFileSync("data/daily.json")).toString());
+
+	if (iniateDaily.length !== undefined) {
+		for (let i = 0; i < iniateDaily.length; i++) {
+			test(
+				`Kuramanime TV Series Daily: ${iniateDaily[i].title}`,
+				{ tag: ["@kuramanime_daily"] },
+				async ({ page }) => {
+					const daily: AnimesData[] = JSON.parse(Buffer.from(readFileSync("data/daily.json")).toString());
+
+					if (!existsSync("outputm3u")) {
+						mkdirSync("outputm3u");
+					}
+
+					if (!existsSync(`outputm3u/${daily[i].slug}.m3u`)) {
+						writeFileSync(`outputm3u/${daily[i].slug}.m3u`, "#EXTM3U", { flag: "a" });
+					}
+
+					await page.goto(`${process.env.KURAMANIME_BASE_URL}/anime/${daily[i].id}/${daily[i].slug}`, {
+						waitUntil: "networkidle",
+					});
+
+					for (let j = 1; j <= daily[i].posts.length; j++) {
+						if (j > daily[i].posts.length) break;
+
+						await page.locator("#episodeLists").click();
+
+						const epsPagePromise = page.waitForEvent("popup");
+
+						if (j === 14) {
+							await page.locator(".fa.fa-forward").click();
+
+							await page
+								.locator(".btn.btn-sm.btn-danger.mb-1.mt-1")
+								.getByText(`Ep ${j}`, { exact: true })
+								.click({ timeout: 1000 * 30 });
+						} else {
+							await page
+								.locator(".btn.btn-sm.btn-danger.mb-1.mt-1")
+								.getByText(`Ep ${j}`, { exact: true })
+								.click();
+						}
+
+						const epsPage = await epsPagePromise;
+
+						const srcVideoAttribute = await epsPage
+							.locator("#source720")
+							.getAttribute("src", { timeout: 1000 * 30 });
+
+						await epsPage.close();
+
+						const readM3U: string = Buffer.from(readFileSync(`outputm3u/${daily[i].slug}.m3u`)).toString();
+
+						if (!readM3U.includes(`Episode ${j}`)) {
+							writeFileSync(
+								`outputm3u/${daily[i].slug}.m3u`,
+								`\n#EXTINF:-1, ${daily[i].title} - Episode ${j}\n${srcVideoAttribute}`,
+								{ flag: "a" },
+							);
+							console.log(`anime ${daily[i].title} link for eps: ${j}\n${srcVideoAttribute}\n`);
+						} else {
+							console.log(`anime ${daily[i].title} link for eps: ${j} already created skipped writing`);
+						}
+					}
+
+					await page.close();
+				},
+			);
 		}
-
-		const response = await page.request.get(
-			`${process.env.KURAMANIME_BASE_URL}/quick/ongoing?order_by=updated&page=1&need_json=true`,
-		);
-
-		const resJSON: iQuickResAPI = await response.json();
-
-		const filteredAnimeByJapan = resJSON.animes.data.filter((data) => data.country_code === "JP");
-
-		const filteredAnimeByLatestEpsLessThan24 = filteredAnimeByJapan.filter(
-			(data) => data.latest_episode <= 24,
-		);
-
-		await page.goto(`${process.env.KURAMANIME_BASE_URL}`);
-
-		await page.getByText("Lihat Semua").first().click();
-
-		for (let i = 0; i < filteredAnimeByLatestEpsLessThan24.length; i++) {
-			if (!existsSync(`outputm3u/${filteredAnimeByLatestEpsLessThan24[i].slug}.m3u`)) {
-				writeFileSync(`outputm3u/${filteredAnimeByLatestEpsLessThan24[i].slug}.m3u`, "#EXTM3U", {
-					flag: "a",
-				});
-			}
-
-			const fileM3U: string = Buffer.from(
-				readFileSync(`outputm3u/${filteredAnimeByLatestEpsLessThan24[i].slug}.m3u`),
-			).toString();
-
-			if (fileM3U.includes(`Episode ${filteredAnimeByLatestEpsLessThan24[i].latest_episode}`)) {
-				console.log(
-					"Gk Lanjut Eksekusi untuk title: ",
-					filteredAnimeByLatestEpsLessThan24[i].title,
-					" Because it's already created",
-				);
-			} else {
-				console.log("Lanjut Eksekusi untuk title: ", filteredAnimeByLatestEpsLessThan24[i].title);
-
-				const detailPagePromise = page.waitForEvent("popup");
-
-				await page
-					.getByText(`${filteredAnimeByLatestEpsLessThan24[i].title}`, { exact: true })
-					.first()
-					.click();
-
-				const detailPage = await detailPagePromise;
-
-				const srcVideoAttribute = await detailPage
-					.locator("#source720")
-					.getAttribute("src", { timeout: 1000 * 30 });
-
-				await detailPage.close();
-
-				appendFileSync(
-					`outputm3u/${filteredAnimeByLatestEpsLessThan24[i].slug}.m3u`,
-					`\n#EXTINF:-1, ${filteredAnimeByLatestEpsLessThan24[i].title} - Episode ${filteredAnimeByLatestEpsLessThan24[i].latest_episode}\n${srcVideoAttribute}`,
-					{ flag: "a" },
-				);
-				console.log(
-					`save video link for eps: ${filteredAnimeByLatestEpsLessThan24[i].latest_episode}\n${srcVideoAttribute}\n`,
-				);
-			}
-		}
-		await page.close();
-	});
+	}
 });
