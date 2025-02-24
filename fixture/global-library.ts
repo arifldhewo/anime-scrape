@@ -50,6 +50,10 @@ async function globalSetup(): Promise<void> {
 			}
 		}
 	} else {
+		const filterCountry: AnimesData[] = dailyJSON.animes.data.filter((data) => data.country_code === "JP");
+
+		filterEps = filterCountry.filter((data) => data.posts.length <= 27);
+
 		writeFileSync(`data/daily.json`, JSON.stringify(filterEps));
 	}
 

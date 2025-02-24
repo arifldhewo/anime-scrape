@@ -61,7 +61,7 @@ test.describe("Kuramanime Scrape", () => {
 							await page
 								.locator(".btn.btn-sm.btn-danger.mb-1.mt-1")
 								.getByText(`Ep ${j}`, { exact: true })
-								.click({ timeout: 1000 * 30 });
+								.click({ timeout: 1000 * 60 });
 						} else {
 							await page
 								.locator(".btn.btn-sm.btn-danger.mb-1.mt-1")
