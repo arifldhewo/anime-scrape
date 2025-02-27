@@ -14,6 +14,7 @@ async function globalSetup(): Promise<void> {
 	}
 
 	writeFileSync(`data/daily.json`, "{}");
+	writeFileSync(`data/searchResult.json`, "{}");
 
 	const dailyResponse: APIResponse = await page.request.get(
 		`${process.env.KURAMANIME_BASE_URL}/schedule?scheduled_day=${getDay()}&page=1&need_json=true`,

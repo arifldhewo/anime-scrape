@@ -48,7 +48,9 @@ test.describe("Kuramanime Scrape", () => {
 						},
 					);
 
-					for (let j = 1; j <= search.animes.data[i].posts.length; j++) {
+					const filteredPosts = search.animes.data[i].posts.filter((data) => data.type === "Episode");
+
+					for (let j = 1; j <= filteredPosts.length; j++) {
 						if (j > search.animes.data[i].posts.length) break;
 
 						await page.locator("#episodeLists").click();
@@ -96,8 +98,6 @@ test.describe("Kuramanime Scrape", () => {
 					}
 
 					await page.close();
-
-					writeFileSync("data/searchResult.json", "{}");
 				},
 			);
 		}
@@ -125,7 +125,9 @@ test.describe("Kuramanime Scrape", () => {
 						waitUntil: "networkidle",
 					});
 
-					for (let j = 1; j <= daily[i].posts.length; j++) {
+					const filteredPosts = daily[i].posts.filter((data) => data.type === "Episode");
+
+					for (let j = 1; j <= filteredPosts.length; j++) {
 						if (j > daily[i].posts.length) break;
 
 						await page.locator("#episodeLists").click();

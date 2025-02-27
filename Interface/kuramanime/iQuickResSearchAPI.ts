@@ -41,4 +41,5 @@ interface PostsData {
 	anime_id: number;
 	title: string;
 	episode: number;
+	type: string;
 }
