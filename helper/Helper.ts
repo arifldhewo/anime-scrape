@@ -45,7 +45,7 @@ export class Helper {
 export function getDay(): string {
 	const date = new Date();
 
-	const allDays: string[] = ["sunday", "monday", "tuesday", "wednesday", "friday", "saturday"];
+	const allDays: string[] = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
 	const currentDay: number = date.getDay();
 
 	return allDays[currentDay];
