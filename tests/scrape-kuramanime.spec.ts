@@ -41,6 +41,16 @@ test.describe("Kuramanime Scrape", () => {
 						writeFileSync(`outputm3u/${search.animes.data[i].slug}.m3u`, "#EXTM3U", { flag: "a" });
 					}
 
+					const reqImage = await page.request.get(search[i].image_portrait_url);
+
+					const resImage = await reqImage.body();
+
+					const isImgExist = existsSync(`outputm3u/${search[i].slug}.jpeg`);
+
+					if (!isImgExist) {
+						writeFileSync(`outputm3u/${search[i].slug}.jpeg`, resImage);
+					}
+
 					await page.goto(
 						`${process.env.KURAMANIME_BASE_URL}/anime/${search.animes.data[i].id}/${search.animes.data[i].slug}`,
 						{
@@ -119,6 +129,16 @@ test.describe("Kuramanime Scrape", () => {
 
 					if (!existsSync(`outputm3u/${daily[i].slug}.m3u`)) {
 						writeFileSync(`outputm3u/${daily[i].slug}.m3u`, "#EXTM3U", { flag: "a" });
+					}
+
+					const reqImage = await page.request.get(daily[i].image_portrait_url);
+
+					const resImage = await reqImage.body();
+
+					const isImgExist = existsSync(`outputm3u/${daily[i].slug}.jpeg`);
+
+					if (!isImgExist) {
+						writeFileSync(`outputm3u/${daily[i].slug}.jpeg`, resImage);
 					}
 
 					await page.goto(`${process.env.KURAMANIME_BASE_URL}/anime/${daily[i].id}/${daily[i].slug}`, {

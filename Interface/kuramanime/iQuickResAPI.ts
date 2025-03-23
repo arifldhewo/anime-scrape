@@ -31,6 +31,8 @@ export interface AnimesData {
 	schedule_time: string;
 	score: number | null;
 	votes: number;
+	image_landscape_url: string;
+	image_portrait_url: string;
 	country_code: string;
 	latest_episode: number;
 	latest_post_at: string | null;
