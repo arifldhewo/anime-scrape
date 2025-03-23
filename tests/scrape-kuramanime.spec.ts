@@ -42,14 +42,14 @@ test.describe("Kuramanime Scrape", () => {
 					}
 
 					if (search.animes.data[i].image_portrait_url !== undefined) {
-						const reqImage = await page.request.get(search[i].image_portrait_url);
+						const reqImage = await page.request.get(search.animes.data[i].image_portrait_url);
 
 						const resImage = await reqImage.body();
 
-						const isImgExist = existsSync(`outputm3u/${search[i].slug}.jpeg`);
+						const isImgExist = existsSync(`outputm3u/${search.animes.data[i].slug}.jpeg`);
 
 						if (!isImgExist) {
-							writeFileSync(`outputm3u/${search[i].slug}.jpeg`, resImage);
+							writeFileSync(`outputm3u/${search.animes.data[i].slug}.jpeg`, resImage);
 						}
 					}
 
