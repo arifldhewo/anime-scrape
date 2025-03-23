@@ -41,7 +41,7 @@ test.describe("Kuramanime Scrape", () => {
 						writeFileSync(`outputm3u/${search.animes.data[i].slug}.m3u`, "#EXTM3U", { flag: "a" });
 					}
 
-					if (search[i].image_portrait_url !== undefined) {
+					if (search.animes.data[i].image_portrait_url !== undefined) {
 						const reqImage = await page.request.get(search[i].image_portrait_url);
 
 						const resImage = await reqImage.body();

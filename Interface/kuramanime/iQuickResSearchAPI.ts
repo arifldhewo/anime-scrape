@@ -28,6 +28,8 @@ interface AnimesData {
 	schedule_day: string;
 	schedule_time: string;
 	score: number | null;
+	image_landscape_url: string;
+	image_portrait_url: string;
 	votes: number;
 	country_code: string;
 	latest_episode: number;
