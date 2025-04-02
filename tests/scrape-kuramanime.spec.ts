@@ -3,13 +3,12 @@ import { test } from "@playwright/test";
 import { AnimesData } from "@/Interface/kuramanime/iQuickResAPI";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { iQuickResSearchAPI } from "@/Interface/kuramanime/iQuickResSearchAPI";
+import { getDay } from "@/helper/Helper";
 
 dotenv.config();
 
 test.describe("Kuramanime Scrape", () => {
 	test("For Global Setup Running", { tag: ["@kuramanime_initiate"] }, async ({ page }) => {
-		console.log("for running global setup only");
-
 		const search: iQuickResSearchAPI = JSON.parse(
 			Buffer.from(readFileSync("data/searchResult.json")).toString(),
 		);
@@ -17,6 +16,13 @@ test.describe("Kuramanime Scrape", () => {
 		if (search.animes.data.length === 0) {
 			throw new Error("Title is not found");
 		}
+
+		const dailyAnime: AnimesData[] = JSON.parse(Buffer.from(readFileSync(`data/daily.json`)).toString());
+
+		console.log(
+			`For today (${getDay()}) anime schedule`,
+			dailyAnime.map((data) => data.title),
+		);
 	});
 
 	const iniateSearch: iQuickResSearchAPI = JSON.parse(
