@@ -1,14 +1,30 @@
 import * as dotenv from "dotenv";
-import { test } from "@playwright/test";
+import { APIResponse, test } from "@playwright/test";
 import { AnimesData } from "@/Interface/kuramanime/iQuickResAPI";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { iQuickResSearchAPI } from "@/Interface/kuramanime/iQuickResSearchAPI";
 import { getDay } from "@/helper/Helper";
+import { config } from "@/config/config";
 
 dotenv.config();
 
 test.describe("Kuramanime Scrape", () => {
 	test("For Global Setup Running", { tag: ["@kuramanime_initiate"] }, async ({ page }) => {
+		const readSearchJSON: Record<string, any> = JSON.parse(
+			Buffer.from(readFileSync(`data/search.json`)).toString(),
+		);
+
+		const searchResponse: APIResponse = await page.request.get(
+			`${config.kuramanimeBaseURL}/anime?search=${readSearchJSON.searchTitle}&need_json=true`,
+		);
+
+		const searchJSON: iQuickResSearchAPI = await searchResponse.json();
+
+		console.log(
+			`Search Keyword: `,
+			searchJSON.animes.data.map((data) => data.title),
+		);
+
 		const search: iQuickResSearchAPI = JSON.parse(
 			Buffer.from(readFileSync("data/searchResult.json")).toString(),
 		);
@@ -135,8 +151,12 @@ test.describe("Kuramanime Scrape", () => {
 						mkdirSync("outputm3u");
 					}
 
-					if (!existsSync(`outputm3u/${daily[i].slug}.m3u`)) {
-						writeFileSync(`outputm3u/${daily[i].slug}.m3u`, "#EXTM3U", { flag: "a" });
+					if (!existsSync(`outputm3u/${getDay()}`)) {
+						mkdirSync(`outputm3u/${getDay()}`);
+					}
+
+					if (!existsSync(`outputm3u/${getDay()}/${daily[i].slug}.m3u`)) {
+						writeFileSync(`outputm3u/${getDay()}/${daily[i].slug}.m3u`, "#EXTM3U", { flag: "a" });
 					}
 
 					if (daily[i].image_portrait_url !== undefined) {
@@ -144,10 +164,8 @@ test.describe("Kuramanime Scrape", () => {
 
 						const resImage = await reqImage.body();
 
-						const isImgExist = existsSync(`outputm3u/${daily[i].slug}.jpeg`);
-
-						if (!isImgExist) {
-							writeFileSync(`outputm3u/${daily[i].slug}.jpeg`, resImage);
+						if (!existsSync(`outputm3u/${getDay()}/${daily[i].slug}.jpeg`)) {
+							writeFileSync(`outputm3u/${getDay()}/${daily[i].slug}.jpeg`, resImage);
 						}
 					}
 
@@ -186,11 +204,13 @@ test.describe("Kuramanime Scrape", () => {
 
 						await epsPage.close();
 
-						const readM3U: string = Buffer.from(readFileSync(`outputm3u/${daily[i].slug}.m3u`)).toString();
+						const readM3U: string = Buffer.from(
+							readFileSync(`outputm3u/${getDay()}/${daily[i].slug}.m3u`),
+						).toString();
 
 						if (!readM3U.includes(`Episode ${j}`)) {
 							writeFileSync(
-								`outputm3u/${daily[i].slug}.m3u`,
+								`outputm3u/${getDay()}/${daily[i].slug}.m3u`,
 								`\n#EXTINF:-1, ${daily[i].title} - Episode ${j}\n${srcVideoAttribute}`,
 								{ flag: "a" },
 							);
