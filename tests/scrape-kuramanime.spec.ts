@@ -108,7 +108,7 @@ test.describe("Kuramanime Scrape", () => {
 						const epsPage = await epsPagePromise;
 
 						const srcVideoAttribute = await epsPage
-							.locator("#source720")
+							.locator('source[size="720"]')
 							.getAttribute("src", { timeout: 1000 * 30 });
 
 						await epsPage.close();
@@ -199,7 +199,7 @@ test.describe("Kuramanime Scrape", () => {
 						const epsPage = await epsPagePromise;
 
 						const srcVideoAttribute = await epsPage
-							.locator("#source720")
+							.locator('source[size="720"]')
 							.getAttribute("src", { timeout: 1000 * 30 });
 
 						await epsPage.close();
