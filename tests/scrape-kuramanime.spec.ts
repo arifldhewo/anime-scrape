@@ -3,7 +3,7 @@ import { APIResponse, test } from "@playwright/test";
 import { AnimesData } from "@/Interface/kuramanime/iQuickResAPI";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { iQuickResSearchAPI } from "@/Interface/kuramanime/iQuickResSearchAPI";
-import { getDay } from "@/helper/Helper";
+import { getDay, readLatestFile } from "@/helper/Helper";
 import { config } from "@/config/config";
 
 dotenv.config();
@@ -91,7 +91,7 @@ test.describe("Kuramanime Scrape", () => {
 
 						const epsPagePromise = page.waitForEvent("popup");
 
-						if (j === 14) {
+						if (j === 14 || j === 27) {
 							await page.locator(".fa.fa-forward").click();
 
 							await page
@@ -146,6 +146,7 @@ test.describe("Kuramanime Scrape", () => {
 				{ tag: ["@kuramanime_daily"] },
 				async ({ page }) => {
 					const daily: AnimesData[] = JSON.parse(Buffer.from(readFileSync("data/daily.json")).toString());
+					let iteration: number = 0;
 
 					if (!existsSync("outputm3u")) {
 						mkdirSync("outputm3u");
@@ -174,27 +175,29 @@ test.describe("Kuramanime Scrape", () => {
 					});
 
 					const filteredPosts = daily[i].posts.filter((data) => data.type === "Episode");
+					const currentIndex = readLatestFile();
 
-					for (let j = 1; j <= filteredPosts.length; j++) {
+					let filteredCurrentIndex = currentIndex.filter((data) => data.index === i);
+
+					if (filteredCurrentIndex.length === 0) filteredCurrentIndex.length = 1;
+
+					for (let j = filteredCurrentIndex.length; j <= filteredPosts.length; j++) {
 						if (j > daily[i].posts.length) break;
 
 						await page.locator("#episodeLists").click();
 
+						if (iteration === 0 && j >= 27) {
+							await page.locator(".fa.fa-forward").click();
+							await page.locator(".fa.fa-forward").click();
+						} else if ((iteration === 0 && j >= 14) || j === 14 || j === 27) {
+							await page.locator(".fa.fa-forward").click();
+						}
 						const epsPagePromise = page.waitForEvent("popup");
 
-						if (j === 14) {
-							await page.locator(".fa.fa-forward").click();
-
-							await page
-								.locator(".btn.btn-sm.btn-danger.mb-1.mt-1")
-								.getByText(`Ep ${j}`, { exact: true })
-								.click({ timeout: 1000 * 30 });
-						} else {
-							await page
-								.locator(".btn.btn-sm.btn-danger.mb-1.mt-1")
-								.getByText(`Ep ${j}`, { exact: true })
-								.click();
-						}
+						await page
+							.locator(".btn.btn-sm.btn-danger.mb-1.mt-1")
+							.getByText(`Ep ${j}`, { exact: true })
+							.click({ timeout: 1000 * 30 });
 
 						const epsPage = await epsPagePromise;
 
@@ -214,10 +217,12 @@ test.describe("Kuramanime Scrape", () => {
 								`\n#EXTINF:-1, ${daily[i].title} - Episode ${j}\n${srcVideoAttribute}`,
 								{ flag: "a" },
 							);
-							console.log(`anime ${daily[i].title} link for eps: ${j}\n${srcVideoAttribute}\n`);
+							console.log(`anime ${daily[i].title} link for eps: ${j}\n${srcVideoAttribute}\n\n`);
 						} else {
-							console.log(`anime ${daily[i].title} link for eps: ${j} already created skipped writing`);
+							console.log(`anime ${daily[i].title} link for eps: ${j} already created skipped writing\n\n`);
 						}
+
+						iteration += 1;
 					}
 
 					await page.close();
