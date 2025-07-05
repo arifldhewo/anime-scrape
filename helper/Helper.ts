@@ -93,33 +93,17 @@ export function getCurrentDate(): string {
 	return `${currentYear}-${currentMonth}-${currentDay}`;
 }
 
-export function readLatestFile(): { index: number }[] {
-	const rawFileUpdated: AnimesData[] = JSON.parse(readFileSync(`data/daily.json`).toString());
+export function readLatestFile(title: string): number[] {
+	const fileString = readFileSync(`outputm3u/${getDay()}/${title}.m3u`).toString();
 
-	const titleList = rawFileUpdated.map((data) => data.slug);
+	const splitted = fileString.split("\n");
 
-	let allFilesBecomeString: string[] = [];
+	let totalEpisode: number[] = [];
 
-	titleList.forEach((data) => {
-		const fileString = readFileSync(`outputm3u/${getDay()}/${data}.m3u`).toString();
-
-		allFilesBecomeString.push(fileString);
-	});
-
-	let allSplitted: string[][] = [];
-
-	allFilesBecomeString.forEach((data) => {
-		allSplitted.push(data.split("\n"));
-	});
-
-	let totalEpisode: { index: number }[] = [];
-
-	allSplitted.forEach((allData, allIndex) => {
-		allData.forEach((detailData, detailIndex) => {
-			if (detailIndex % 2 === 1) {
-				totalEpisode.push({ index: allIndex });
-			}
-		});
+	splitted.forEach((_, index) => {
+		if (index % 2 === 1) {
+			totalEpisode.push(index);
+		}
 	});
 
 	return totalEpisode;

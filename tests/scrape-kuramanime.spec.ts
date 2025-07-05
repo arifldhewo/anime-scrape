@@ -175,13 +175,11 @@ test.describe("Kuramanime Scrape", () => {
 					});
 
 					const filteredPosts = daily[i].posts.filter((data) => data.type === "Episode");
-					const currentIndex = readLatestFile();
+					const currentIndex = readLatestFile(daily[i].slug);
 
-					let filteredCurrentIndex = currentIndex.filter((data) => data.index === i);
+					if (currentIndex.length === 0) currentIndex.length = 1;
 
-					if (filteredCurrentIndex.length === 0) filteredCurrentIndex.length = 1;
-
-					for (let j = filteredCurrentIndex.length; j <= filteredPosts.length; j++) {
+					for (let j = currentIndex.length; j <= filteredPosts.length; j++) {
 						if (j > daily[i].posts.length) break;
 
 						await page.locator("#episodeLists").click();
