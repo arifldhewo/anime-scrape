@@ -49,9 +49,9 @@ export function cliHelper(argv: string[]) {
 
 export function getDay(currentDay?: number): string {
 	const date = new Date();
-
 	const allDays: string[] = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-	if (currentDay === undefined) {
+
+	if (Number.isNaN(currentDay) || currentDay === undefined) {
 		currentDay = date.getDay();
 	}
 
