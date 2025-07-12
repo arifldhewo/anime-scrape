@@ -4,4 +4,5 @@ dotenv.config();
 
 export const config = {
 	KURAMANIME_BASE_URL: process.env.KURAMANIME_BASE_URL || "https://v8.kuramanime.run",
+	SELECTED_DAY: parseInt(process.env.DAY) || undefined,
 };
