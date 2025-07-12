@@ -226,7 +226,7 @@ func checkVersion() (string, error) {
 			return err.Error(), err
 		}
 
-		rawPackageJson, err := os.Open(filePackagePath + "\\..\\package.json")
+		rawPackageJson, err := os.Open(filePackagePath + "\\package.json")
 
 		if err != nil {
 			return err.Error(), err
