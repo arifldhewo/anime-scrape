@@ -1,6 +1,6 @@
 {
 	"name": "anime-scrape",
-	"version": "1.3.2",
+	"version": "1.3.3",
 	"main": "index.js",
 	"scripts": {
 		"spy": "npx playwright codegen kuramanime.dad",
