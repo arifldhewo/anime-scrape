@@ -1,4 +1,3 @@
-import * as dotenv from "dotenv";
 import { APIResponse, test } from "@playwright/test";
 import { AnimesData } from "@/Interface/kuramanime/iQuickResAPI";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
@@ -6,18 +5,17 @@ import { iQuickResSearchAPI } from "@/Interface/kuramanime/iQuickResSearchAPI";
 import { getDay, readLatestFile } from "@/helper/Helper";
 import { config } from "@/config/config";
 
-dotenv.config();
-
 test.describe("Kuramanime Scrape", () => {
-	test("For Global Setup Running", { tag: ["@kuramanime_initiate"] }, async ({ page }) => {
-		const selectedDay = parseInt(process.env.DAY);
+	const kuramanimeBaseURL = config.KURAMANIME_BASE_URL;
+	const selectedDay = config.SELECTED_DAY;
 
+	test("For Global Setup Running", { tag: ["@kuramanime_initiate"] }, async ({ page }) => {
 		const readSearchJSON: Record<string, any> = JSON.parse(
 			Buffer.from(readFileSync(`data/search.json`)).toString(),
 		);
 
 		const searchResponse: APIResponse = await page.request.get(
-			`${config.kuramanimeBaseURL}/anime?search=${readSearchJSON.searchTitle}&need_json=true`,
+			`${kuramanimeBaseURL}/anime?search=${readSearchJSON.searchTitle}&need_json=true`,
 		);
 
 		const searchJSON: iQuickResSearchAPI = await searchResponse.json();
@@ -78,7 +76,7 @@ test.describe("Kuramanime Scrape", () => {
 					}
 
 					await page.goto(
-						`${process.env.KURAMANIME_BASE_URL}/anime/${search.animes.data[i].id}/${search.animes.data[i].slug}`,
+						`${kuramanimeBaseURL}/anime/${search.animes.data[i].id}/${search.animes.data[i].slug}`,
 						{
 							waitUntil: "networkidle",
 						},
@@ -147,8 +145,6 @@ test.describe("Kuramanime Scrape", () => {
 				`Kuramanime TV Series Daily: ${iniateDaily[i].title}`,
 				{ tag: ["@kuramanime_daily"] },
 				async ({ page }) => {
-					const selectedDay = parseInt(process.env.DAY);
-
 					const daily: AnimesData[] = JSON.parse(Buffer.from(readFileSync("data/daily.json")).toString());
 					let iteration: number = 0;
 
@@ -174,7 +170,7 @@ test.describe("Kuramanime Scrape", () => {
 						}
 					}
 
-					await page.goto(`${process.env.KURAMANIME_BASE_URL}/anime/${daily[i].id}/${daily[i].slug}`, {
+					await page.goto(`${kuramanimeBaseURL}/anime/${daily[i].id}/${daily[i].slug}`, {
 						waitUntil: "networkidle",
 					});
 
