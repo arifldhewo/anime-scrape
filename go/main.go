@@ -116,7 +116,6 @@ func main() {
 
 	cmd := exec.Command("npm", "run", kuramanimeCommand)
 	cmd.Env = append(os.Environ(), "DAY="+day)
-	fmt.Print(day)
 
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -126,8 +125,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	fmt.Scanln()
 }
 
 func weekdayToJS(weekday string) int {
