@@ -43,7 +43,7 @@ func main() {
 		log.Fatal(err) 
 	}
 
-	fmt.Printf("%s \n\n", versionValue)
+	fmt.Printf("%s", versionValue)
 
 	for {
 		fmt.Println("What do you want to scrape? ")
@@ -229,7 +229,7 @@ func checkVersion() (string, error) {
 			return err.Error(), err
 		}
 
-		rawPackageJson, err := os.Open(filePackagePath + "\\package.json")
+		rawPackageJson, err := os.Open(filePackagePath + "\\..\\package.json")
 
 		if err != nil {
 			return err.Error(), err
@@ -244,7 +244,7 @@ func checkVersion() (string, error) {
 		}
 
 		if releasesGithubResponse[0].TagName != packageJson.Version {
-			value = fmt.Sprintf("Hey 👋, There's a new version %s, you could git pull yeah! [current: %s] \n\n", releasesGithubResponse[0].TagName, packageJson.Version)
+			value = fmt.Sprintf("Hey, There's a new version %s, you could git pull yeah! [current: %s] \n\n", releasesGithubResponse[0].TagName, packageJson.Version)
 		}
 	}
 
