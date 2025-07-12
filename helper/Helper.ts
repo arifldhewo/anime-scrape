@@ -44,11 +44,17 @@ export class Helper {
 	}
 }
 
-export function getDay(): string {
+export function cliHelper(argv: string[]) {
+	console.log(argv);
+}
+
+export function getDay(currentDay?: number): string {
 	const date = new Date();
 
 	const allDays: string[] = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-	const currentDay: number = date.getDay();
+	if (!currentDay) {
+		currentDay = date.getDay();
+	}
 
 	return allDays[currentDay];
 }
@@ -93,8 +99,8 @@ export function getCurrentDate(): string {
 	return `${currentYear}-${currentMonth}-${currentDay}`;
 }
 
-export function readLatestFile(title: string): number[] {
-	const fileString = readFileSync(`outputm3u/${getDay()}/${title}.m3u`).toString();
+export function readLatestFile(title: string, selectedDay: number): number[] {
+	const fileString = readFileSync(`outputm3u/${getDay(selectedDay)}/${title}.m3u`).toString();
 
 	const splitted = fileString.split("\n");
 

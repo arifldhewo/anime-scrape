@@ -8,6 +8,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 async function globalSetup(): Promise<void> {
 	const browser = await chromium.launch({ headless: true });
 	const page = await browser.newPage();
+	const selectedDay = parseInt(process.env.DAY);
 
 	if (!existsSync(`data`)) {
 		mkdirSync(`data`);
@@ -17,7 +18,7 @@ async function globalSetup(): Promise<void> {
 	writeFileSync(`data/searchResult.json`, "{}");
 
 	const dailyResponse: APIResponse = await page.request.get(
-		`${process.env.KURAMANIME_BASE_URL}/schedule?scheduled_day=${getDay()}&page=1&need_json=true`,
+		`${process.env.KURAMANIME_BASE_URL}/schedule?scheduled_day=${getDay(selectedDay)}&page=1&need_json=true`,
 	);
 
 	const dailyJSON: iQuickResAPI = await dailyResponse.json();
@@ -27,7 +28,7 @@ async function globalSetup(): Promise<void> {
 	if (dailyJSON.animes.last_page > 1) {
 		for (let i = 1; i <= dailyJSON.animes.last_page; i++) {
 			const dailyResponse1: APIResponse = await page.request.get(
-				`${process.env.KURAMANIME_BASE_URL}/schedule?scheduled_day=${getDay()}&page=${i}&need_json=true`,
+				`${process.env.KURAMANIME_BASE_URL}/schedule?scheduled_day=${getDay(selectedDay)}&page=${i}&need_json=true`,
 			);
 
 			const dailyJSON1: iQuickResAPI = await dailyResponse1.json();

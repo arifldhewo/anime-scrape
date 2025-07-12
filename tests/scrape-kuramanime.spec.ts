@@ -10,6 +10,8 @@ dotenv.config();
 
 test.describe("Kuramanime Scrape", () => {
 	test("For Global Setup Running", { tag: ["@kuramanime_initiate"] }, async ({ page }) => {
+		const selectedDay = parseInt(process.env.DAY);
+
 		const readSearchJSON: Record<string, any> = JSON.parse(
 			Buffer.from(readFileSync(`data/search.json`)).toString(),
 		);
@@ -36,7 +38,7 @@ test.describe("Kuramanime Scrape", () => {
 		const dailyAnime: AnimesData[] = JSON.parse(Buffer.from(readFileSync(`data/daily.json`)).toString());
 
 		console.log(
-			`For today (${getDay()}) anime schedule`,
+			`For today (${getDay(selectedDay)}) anime schedule`,
 			dailyAnime.map((data) => data.title),
 		);
 	});
@@ -145,6 +147,8 @@ test.describe("Kuramanime Scrape", () => {
 				`Kuramanime TV Series Daily: ${iniateDaily[i].title}`,
 				{ tag: ["@kuramanime_daily"] },
 				async ({ page }) => {
+					const selectedDay = parseInt(process.env.DAY);
+
 					const daily: AnimesData[] = JSON.parse(Buffer.from(readFileSync("data/daily.json")).toString());
 					let iteration: number = 0;
 
@@ -152,12 +156,12 @@ test.describe("Kuramanime Scrape", () => {
 						mkdirSync("outputm3u");
 					}
 
-					if (!existsSync(`outputm3u/${getDay()}`)) {
-						mkdirSync(`outputm3u/${getDay()}`);
+					if (!existsSync(`outputm3u/${getDay(selectedDay)}`)) {
+						mkdirSync(`outputm3u/${getDay(selectedDay)}`);
 					}
 
-					if (!existsSync(`outputm3u/${getDay()}/${daily[i].slug}.m3u`)) {
-						writeFileSync(`outputm3u/${getDay()}/${daily[i].slug}.m3u`, "#EXTM3U", { flag: "a" });
+					if (!existsSync(`outputm3u/${getDay(selectedDay)}/${daily[i].slug}.m3u`)) {
+						writeFileSync(`outputm3u/${getDay(selectedDay)}/${daily[i].slug}.m3u`, "#EXTM3U", { flag: "a" });
 					}
 
 					if (daily[i].image_portrait_url !== undefined) {
@@ -165,8 +169,8 @@ test.describe("Kuramanime Scrape", () => {
 
 						const resImage = await reqImage.body();
 
-						if (!existsSync(`outputm3u/${getDay()}/${daily[i].slug}.jpeg`)) {
-							writeFileSync(`outputm3u/${getDay()}/${daily[i].slug}.jpeg`, resImage);
+						if (!existsSync(`outputm3u/${getDay(selectedDay)}/${daily[i].slug}.jpeg`)) {
+							writeFileSync(`outputm3u/${getDay(selectedDay)}/${daily[i].slug}.jpeg`, resImage);
 						}
 					}
 
@@ -175,7 +179,7 @@ test.describe("Kuramanime Scrape", () => {
 					});
 
 					const filteredPosts = daily[i].posts.filter((data) => data.type === "Episode");
-					const currentIndex = readLatestFile(daily[i].slug);
+					const currentIndex = readLatestFile(daily[i].slug, selectedDay);
 
 					if (currentIndex.length === 0) currentIndex.length = 1;
 
@@ -206,12 +210,12 @@ test.describe("Kuramanime Scrape", () => {
 						await epsPage.close();
 
 						const readM3U: string = Buffer.from(
-							readFileSync(`outputm3u/${getDay()}/${daily[i].slug}.m3u`),
+							readFileSync(`outputm3u/${getDay(selectedDay)}/${daily[i].slug}.m3u`),
 						).toString();
 
 						if (!readM3U.includes(`Episode ${j}`)) {
 							writeFileSync(
-								`outputm3u/${getDay()}/${daily[i].slug}.m3u`,
+								`outputm3u/${getDay(selectedDay)}/${daily[i].slug}.m3u`,
 								`\n#EXTINF:-1, ${daily[i].title} - Episode ${j}\n${srcVideoAttribute}`,
 								{ flag: "a" },
 							);
