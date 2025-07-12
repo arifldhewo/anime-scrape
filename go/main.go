@@ -9,7 +9,9 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
+	"time"
 )
 
 type Search struct {
@@ -30,60 +32,18 @@ type errorHandling struct {
 }
 
 func main() {
+	var day string;
 	var kuramanimeCommand string
 	var inputType int
-	baseUrl := "https://anime-scrape-version-checker.vercel.app"
-
-	resp, err := http.Get(baseUrl + "/version")
+	var inputDay int
+	
+	versionValue, err := checkVersion()
 
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(err) 
 	}
 
-	defer resp.Body.Close()
-
-	if resp.StatusCode > 399 {
-		var errHandling errorHandling
-
-		err = json.NewDecoder(resp.Body).Decode(&errHandling)
-
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		fmt.Printf("%s %s (%d)", errHandling.Error, errHandling.Message, resp.StatusCode)
-	} else {
-		var releasesGithubResponse []ReleasesGithubResponse
-
-		err = json.NewDecoder(resp.Body).Decode(&releasesGithubResponse)
-
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		filePackagePath, err := os.Getwd()
-
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		rawPackageJson, err := os.Open(filePackagePath + "\\package.json")
-
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		var packageJson PackageJson
-
-		err = json.NewDecoder(rawPackageJson).Decode(&packageJson)
-
-		if err != nil {
-			log.Fatal(err)
-		}
-		if releasesGithubResponse[0].TagName != packageJson.Version {
-			fmt.Printf("Hey 👋, There's a new version %s, you could git pull yeah! [current: %s] \n\n", releasesGithubResponse[0].TagName, packageJson.Version)
-		}
-	}
+	fmt.Printf("%s \n\n", versionValue)
 
 	for {
 		fmt.Println("What do you want to scrape? ")
@@ -94,7 +54,11 @@ func main() {
 		_, err := fmt.Scanln(&inputType)
 
 		if err != nil {
-			log.Fatal("Error on Get Input Type: ", err)
+			fmt.Println("Invalid Input Please enter a number")
+
+			var discard string;
+			fmt.Scanln(&discard)
+			continue
 		}
 
 		if inputType == 1 {
@@ -103,11 +67,84 @@ func main() {
 		} else if inputType == 2 {
 			kuramanimeCommand = "kuramanime-search"
 			break
+		} else {
+			fmt.Println("Please enter valid option 1 or 2")
+		}
+	}
+
+	if inputType == 1 {
+		for {
+			fmt.Println("What day do you want to scrape? ")
+			fmt.Println("[7] Today")
+			fmt.Println("[0] Sunday")
+			fmt.Println("[1] Monday")
+			fmt.Println("[2] Tuesday")
+			fmt.Println("[3] Wednesday")
+			fmt.Println("[4] Thursday")
+			fmt.Println("[5] Friday")
+			fmt.Println("[6] Saturday")
+			fmt.Print("Input: ")
+
+			_, err := fmt.Scanln(&inputDay)
+			
+			if err != nil {
+				fmt.Println("Invalid input please enter number")
+
+				var discard string;
+				fmt.Scanln(&discard)
+				continue
+			}
+			
+			if (inputDay == 7) {
+				weekdayInJS := weekdayToJS(time.Now().Weekday().String())
+				conv := strconv.Itoa(weekdayInJS)
+				day = conv
+				break
+			} else if (inputDay >= 0 && inputDay <= 6) {
+				conv := strconv.Itoa(inputDay)
+				day = conv
+				break
+			} else {
+				fmt.Println("Please enter valid option from 0 -> 7")
+			}
 		}
 	}
 
 	if inputType == 2 {
-		path, err := os.Getwd()
+		searchFlow();
+	}
+
+	cmd := exec.Command("npm", "run", kuramanimeCommand)
+	cmd.Env = append(os.Environ(), "DAY="+day)
+	fmt.Print(day)
+
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	err = cmd.Run()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Scanln()
+}
+
+func weekdayToJS(weekday string) int {
+	availableDays := [7]string{"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"}
+	var selectedDays int
+
+	for i := 0; i < len(availableDays); i++ {
+		if(availableDays[i] == weekday) {
+			selectedDays = i
+		}
+	}
+
+	return selectedDays
+}
+
+func searchFlow() {
+	path, err := os.Getwd()
 
 		if err != nil {
 			log.Fatal(err)
@@ -153,18 +190,63 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-	}
+}
 
-	cmd := exec.Command("npm", "run", kuramanimeCommand)
+func checkVersion() (string, error) {
+	baseUrl := "https://anime-scrape-version-checker.vercel.app"
+	var value string;
 
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	err = cmd.Run()
+	resp, err := http.Get(baseUrl + "/version")
 
 	if err != nil {
-		log.Fatal(err)
+		return err.Error(), err
 	}
 
-	fmt.Println("Playwright complete")
+	defer resp.Body.Close()
+
+	if resp.StatusCode > 399 {
+		var errHandling errorHandling
+
+		err = json.NewDecoder(resp.Body).Decode(&errHandling)
+
+		if err != nil {
+			return err.Error(), err
+		}
+
+		value = errHandling.Message + " " + errHandling.Error
+	} else {
+		var releasesGithubResponse []ReleasesGithubResponse
+
+		err = json.NewDecoder(resp.Body).Decode(&releasesGithubResponse)
+
+		if err != nil {
+			return err.Error(), err
+		}
+
+		filePackagePath, err := os.Getwd()
+
+		if err != nil {
+			return err.Error(), err
+		}
+
+		rawPackageJson, err := os.Open(filePackagePath + "\\package.json")
+
+		if err != nil {
+			return err.Error(), err
+		}
+
+		var packageJson PackageJson
+
+		err = json.NewDecoder(rawPackageJson).Decode(&packageJson)
+
+		if err != nil {
+			return err.Error(), err
+		}
+
+		if releasesGithubResponse[0].TagName != packageJson.Version {
+			value = fmt.Sprintf("Hey 👋, There's a new version %s, you could git pull yeah! [current: %s] \n\n", releasesGithubResponse[0].TagName, packageJson.Version)
+		}
+	}
+
+	return value, nil
 }
