@@ -1,4 +1,4 @@
-import { AnimesData } from "@/Interface/kuramanime/iQuickResAPI";
+import { AnimesData } from "@/src/Interface/kuramanime/iQuickResAPI";
 import { Locator, Page } from "@playwright/test";
 import { readFileSync } from "node:fs";
 

@@ -11,6 +11,6 @@
 
 1. Open main.exe
 2. and type 1 or 2
-3. 1 is for daily anime that on page 1
+3. 1 is for daily anime that based on weekdays
 4. 2 is for specific search on kuramanime
 5. after that enter, and wait until the process is completed

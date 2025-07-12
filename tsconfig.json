@@ -36,7 +36,7 @@
 		// "typeRoots": [],                                  /* Specify multiple folders that act like './node_modules/@types'. */
 		// "types": [],
 		// Other options...
-		"baseUrl": ".", // This must be specified if "paths" is.
+		"baseUrl": "./src", // This must be specified if "paths" is.
 		"paths": {
 			"@/*": ["./*"] // This mapping is relative to "baseUrl".
 		},
