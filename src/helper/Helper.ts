@@ -1,4 +1,3 @@
-import { AnimesData } from "@/src/Interface/kuramanime/iQuickResAPI";
 import { Locator, Page } from "@playwright/test";
 import { readFileSync } from "node:fs";
 
@@ -52,7 +51,7 @@ export function getDay(currentDay?: number): string {
 	const date = new Date();
 
 	const allDays: string[] = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-	if (!currentDay) {
+	if (currentDay === undefined) {
 		currentDay = date.getDay();
 	}
 
