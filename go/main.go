@@ -190,7 +190,7 @@ func searchFlow() {
 }
 
 func checkVersion() (string, error) {
-	baseUrl := "https://anime-scrape-version-checker.vercel.app"
+	baseUrl := "https://scrape.arifldhewo.my.id"
 	var value string;
 
 	resp, err := http.Get(baseUrl + "/version")
@@ -212,7 +212,7 @@ func checkVersion() (string, error) {
 
 		value = errHandling.Message + " " + errHandling.Error
 	} else {
-		var releasesGithubResponse []ReleasesGithubResponse
+		var releasesGithubResponse ReleasesGithubResponse
 
 		err = json.NewDecoder(resp.Body).Decode(&releasesGithubResponse)
 
@@ -240,8 +240,8 @@ func checkVersion() (string, error) {
 			return err.Error(), err
 		}
 
-		if releasesGithubResponse[0].TagName != packageJson.Version {
-			value = fmt.Sprintf("Hey, There's a new version %s, you could git pull yeah! [current: %s] \n\n", releasesGithubResponse[0].TagName, packageJson.Version)
+		if releasesGithubResponse.TagName != packageJson.Version {
+			value = fmt.Sprintf("Hey, There's a new version %s, you could git pull yeah! [current: %s] \n\n", releasesGithubResponse.TagName, packageJson.Version)
 		}
 	}
 
