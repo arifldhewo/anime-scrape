@@ -10,3 +10,4 @@ node_modules/
 today.json
 /outputm3u
 /dist
+*.idea

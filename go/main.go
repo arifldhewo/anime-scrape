@@ -32,15 +32,15 @@ type errorHandling struct {
 }
 
 func main() {
-	var day string;
+	var day string
 	var kuramanimeCommand string
 	var inputType int
 	var inputDay int
-	
+
 	versionValue, err := checkVersion()
 
 	if err != nil {
-		log.Fatal(err) 
+		log.Fatal(err)
 	}
 
 	fmt.Printf("%s", versionValue)
@@ -56,7 +56,7 @@ func main() {
 		if err != nil {
 			fmt.Println("Invalid Input Please enter a number")
 
-			var discard string;
+			var discard string
 			fmt.Scanln(&discard)
 			continue
 		}
@@ -86,21 +86,21 @@ func main() {
 			fmt.Print("Input: ")
 
 			_, err := fmt.Scanln(&inputDay)
-			
+
 			if err != nil {
 				fmt.Println("Invalid input please enter number")
 
-				var discard string;
+				var discard string
 				fmt.Scanln(&discard)
 				continue
 			}
-			
-			if (inputDay == 7) {
+
+			if inputDay == 7 {
 				weekdayInJS := weekdayToJS(time.Now().Weekday().String())
 				conv := strconv.Itoa(weekdayInJS)
 				day = conv
 				break
-			} else if (inputDay >= 0 && inputDay <= 6) {
+			} else if inputDay >= 0 && inputDay <= 6 {
 				conv := strconv.Itoa(inputDay)
 				day = conv
 				break
@@ -111,7 +111,7 @@ func main() {
 	}
 
 	if inputType == 2 {
-		searchFlow();
+		searchFlow()
 	}
 
 	cmd := exec.Command("npm", "run", kuramanimeCommand)
@@ -132,7 +132,7 @@ func weekdayToJS(weekday string) int {
 	var selectedDays int
 
 	for i := 0; i < len(availableDays); i++ {
-		if(availableDays[i] == weekday) {
+		if availableDays[i] == weekday {
 			selectedDays = i
 		}
 	}
@@ -143,61 +143,65 @@ func weekdayToJS(weekday string) int {
 func searchFlow() {
 	path, err := os.Getwd()
 
-		if err != nil {
-			log.Fatal(err)
-		}
+	if err != nil {
+		log.Fatal(err)
+	}
 
-		file, err := os.Open(path + "/data/search.json")
+	file, err := os.Open(path + "/data/search.json")
 
-		if err != nil {
-			log.Fatal(err)
-		}
+	if err != nil {
+		log.Fatal(err)
+	}
 
-		byteValue, err := io.ReadAll(file)
+	byteValue, err := io.ReadAll(file)
 
-		if err != nil {
-			log.Fatal(err)
-		}
+	if err != nil {
+		log.Fatal(err)
+	}
 
-		var search Search
+	var search Search
 
-		err = json.Unmarshal(byteValue, &search)
+	err = json.Unmarshal(byteValue, &search)
 
-		reader := bufio.NewReader(os.Stdin)
+	reader := bufio.NewReader(os.Stdin)
 
-		var inputAnimeTitle string
+	var inputAnimeTitle string
 
-		fmt.Println("Search anime that you want scrape on kuramanime: ")
-		fmt.Print("Input: ")
+	fmt.Println("Search anime that you want scrape on kuramanime: ")
+	fmt.Print("Input: ")
 
-		inputAnimeTitle, _ = reader.ReadString('\n')
+	inputAnimeTitle, _ = reader.ReadString('\n')
 
-		fixedString := strings.TrimSpace(inputAnimeTitle)
+	fixedString := strings.TrimSpace(inputAnimeTitle)
 
-		search.SearchTitle = fixedString
+	search.SearchTitle = fixedString
 
-		newJSON, err := json.MarshalIndent(search, "", "    ")
+	newJSON, err := json.MarshalIndent(search, "", "    ")
 
-		if err != nil {
-			log.Fatal(err)
-		}
+	if err != nil {
+		log.Fatal(err)
+	}
 
-		err = os.WriteFile(path+"/data/search.json", newJSON, 0644)
+	err = os.WriteFile(path+"/data/search.json", newJSON, 0644)
 
-		if err != nil {
-			log.Fatal(err)
-		}
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func checkVersion() (string, error) {
+	fmt.Print("Loading")
+
 	baseUrl := "https://scrape.arifldhewo.my.id"
-	var value string;
+	var value string
 
 	resp, err := http.Get(baseUrl + "/version")
 
 	if err != nil {
 		return err.Error(), err
 	}
+
+	fmt.Print("\r")
 
 	defer resp.Body.Close()
 
