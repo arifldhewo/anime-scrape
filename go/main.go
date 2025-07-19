@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -27,6 +28,7 @@ type PackageJson struct {
 }
 
 type errorHandling struct {
+	Status  int    `json:"status"`
 	Error   string `json:"error"`
 	Message string `json:"message"`
 }
@@ -192,10 +194,10 @@ func searchFlow() {
 func checkVersion() (string, error) {
 	fmt.Print("Loading")
 
-	baseUrl := "https://scrape.arifldhewo.my.id"
+	baseUrl := "https://version.arifldhewo.my.id"
 	var value string
 
-	resp, err := http.Get(baseUrl + "/version")
+	resp, err := http.Get(baseUrl + "/version/anime-scrape")
 
 	if err != nil {
 		return err.Error(), err
@@ -205,49 +207,45 @@ func checkVersion() (string, error) {
 
 	defer resp.Body.Close()
 
-	if resp.StatusCode > 399 {
-		var errHandling errorHandling
+	if resp.StatusCode > 399 && resp.StatusCode != 404 {
+		return "Check Version Rate Limit Is Reaching (422)", errors.New("Rate Limit is Reaching (422)")
+	} 
 
-		err = json.NewDecoder(resp.Body).Decode(&errHandling)
-
-		if err != nil {
-			return err.Error(), err
-		}
-
-		value = errHandling.Message + " " + errHandling.Error
-	} else {
-		var releasesGithubResponse ReleasesGithubResponse
-
-		err = json.NewDecoder(resp.Body).Decode(&releasesGithubResponse)
-
-		if err != nil {
-			return err.Error(), err
-		}
-
-		filePackagePath, err := os.Getwd()
-
-		if err != nil {
-			return err.Error(), err
-		}
-
-		rawPackageJson, err := os.Open(filePackagePath + "\\package.json")
-
-		if err != nil {
-			return err.Error(), err
-		}
-
-		var packageJson PackageJson
-
-		err = json.NewDecoder(rawPackageJson).Decode(&packageJson)
-
-		if err != nil {
-			return err.Error(), err
-		}
-
-		if releasesGithubResponse.TagName != packageJson.Version {
-			value = fmt.Sprintf("Hey, There's a new version %s, you could git pull yeah! [current: %s] \n\n", releasesGithubResponse.TagName, packageJson.Version)
-		}
+	if resp.StatusCode == 404 {
+		return "Check Version baseURL Path is not found (404)", errors.New("Path Is Not Found (404)")
 	}
 
-	return value, nil
+	var releasesGithubResponse ReleasesGithubResponse
+
+	err = json.NewDecoder(resp.Body).Decode(&releasesGithubResponse)
+
+	if err != nil {
+		return err.Error(), err
+	}
+
+	filePackagePath, err := os.Getwd()
+
+	if err != nil {
+		return err.Error(), err
+	}
+
+	rawPackageJson, err := os.Open(filePackagePath + "\\..\\package.json")
+
+	if err != nil {
+		return err.Error(), err
+	}
+
+	var packageJson PackageJson
+
+	err = json.NewDecoder(rawPackageJson).Decode(&packageJson)
+
+	if err != nil {
+		return err.Error(), err
+	}
+
+	if releasesGithubResponse.TagName != packageJson.Version {
+		value = fmt.Sprintf("Hey, There's a new version %s, you could git pull yeah! [current: %s] \n\n", releasesGithubResponse.TagName, packageJson.Version)
+	}
+
+return value, nil
 }
