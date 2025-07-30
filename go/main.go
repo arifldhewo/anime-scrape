@@ -19,6 +19,20 @@ type Search struct {
 	SearchTitle string `json:"searchTitle"`
 }
 
+type ResKuramanimeScheduleRoot struct {
+	Animes ResKuramanimeScheduleAnimes `json:"animes"`
+}
+
+type ResKuramanimeScheduleAnimes struct {
+	Data []ResKuramanimeScheduleData `json:"data"`
+}
+
+type ResKuramanimeScheduleData struct {
+	Title string `json:"title"`
+	ScheduledTime string `json:"scheduled_time"`
+	CountrCode string `json:"country_code"`
+}
+
 type ReleasesGithubResponse struct {
 	TagName string `json:"tag_name"`
 }
@@ -46,6 +60,10 @@ func main() {
 	}
 
 	fmt.Printf("%s", versionValue)
+
+	if err = showTodayAnimeList(); err != nil {
+		log.Fatal(err)
+	}
 
 	for {
 		fmt.Println("What do you want to scrape? ")
@@ -129,6 +147,67 @@ func main() {
 	}
 }
 
+func showTodayAnimeList() error {
+	res, err := getTodayAnimeList()
+
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("---------------------- Today Anime Schedule ----------------------")
+	fmt.Println("| Animes | Scheduled Time |")
+	
+	for i := 0; i < len(res.Animes.Data); i++ {
+		fmt.Println("| " + res.Animes.Data[i].Title + " | " + convertTimezoneLocal(res.Animes.Data[i].ScheduledTime) + " |")
+	}
+
+	fmt.Println()
+
+	return nil
+}
+
+func getTodayAnimeList() (ResKuramanimeScheduleRoot, error) {
+	baseUrl := "https://v8.kuramanime.tel"
+
+	fmt.Print("Retrieve Today Animes")
+
+	resp, err := http.Get(baseUrl + "/schedule?scheduled_day=" + strings.ToLower(time.Now().Weekday().String()) + "&need_json=true")
+
+	if err != nil {
+		return ResKuramanimeScheduleRoot{}, err
+	}
+
+	fmt.Print("\r")
+
+	defer resp.Body.Close()
+
+	var resKuramanime ResKuramanimeScheduleRoot
+
+	if err = json.NewDecoder(resp.Body).Decode(&resKuramanime); err != nil {
+		return ResKuramanimeScheduleRoot{}, nil
+	}
+
+	var filtered ResKuramanimeScheduleRoot
+
+	for _, res := range resKuramanime.Animes.Data {
+		if(res.CountrCode == "JP") {
+			filtered.Animes.Data = append(filtered.Animes.Data, res)
+		}
+	}
+
+	return filtered, nil
+}
+
+func convertTimezoneLocal(date string) string {
+	utcTime, _ := time.Parse(time.RFC3339, date)
+
+	localTime := utcTime.Local()
+
+	constructedTime := fmt.Sprintf("%d:%d", localTime.Hour(), localTime.Minute())
+
+	return constructedTime
+}
+
 func weekdayToJS(weekday string) int {
 	availableDays := [7]string{"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"}
 	var selectedDays int
@@ -192,7 +271,7 @@ func searchFlow() {
 }
 
 func checkVersion() (string, error) {
-	fmt.Print("Loading")
+	fmt.Print("Checking New Version")
 
 	baseUrl := "https://version.arifldhewo.my.id"
 	var value string
