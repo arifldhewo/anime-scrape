@@ -120,7 +120,7 @@ test.describe("Kuramanime Scrape", () => {
 						if (!readM3U.includes(`Episode ${j}`)) {
 							writeFileSync(
 								`outputm3u/${search.animes.data[i].slug}.m3u`,
-								`\n#EXTINF:-1, ${search.animes.data[i].title} - Episode ${j}\n${srcVideoAttribute}`,
+								`\n#EXTINF:-1, ${search.animes.data[i].title} | Episode ${j}\n${srcVideoAttribute}`,
 								{ flag: "a" },
 							);
 							console.log(`anime ${search.animes.data[i].title} link for eps: ${j}\n${srcVideoAttribute}\n`);
@@ -212,7 +212,7 @@ test.describe("Kuramanime Scrape", () => {
 						if (!readM3U.includes(`Episode ${j}`)) {
 							writeFileSync(
 								`outputm3u/${getDay(selectedDay)}/${daily[i].slug}.m3u`,
-								`\n#EXTINF:-1, ${daily[i].title} - Episode ${j}\n${srcVideoAttribute}`,
+								`\n#EXTINF:-1, ${daily[i].title} | Episode ${j}\n${srcVideoAttribute}`,
 								{ flag: "a" },
 							);
 							console.log(`anime ${daily[i].title} link for eps: ${j}\n${srcVideoAttribute}\n\n`);
