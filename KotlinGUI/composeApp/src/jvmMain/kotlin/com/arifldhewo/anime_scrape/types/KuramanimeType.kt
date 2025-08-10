@@ -10,7 +10,8 @@ data class KuramanimeRootType(
 
 @Serializable
 data class KuramanimeAnimes(
-    val data: List<KuramanimeData>
+    var data: List<KuramanimeData>,
+    @SerialName("last_page") val lastPage: Int,
 )
 
 @Serializable
@@ -18,8 +19,8 @@ data class KuramanimeData(
     val id: Int,
     val title: String,
     val slug: String,
-    @SerialName("country_code") val countryCode: String,
-    @SerialName("schedule_date") val scheduleDate: String?,
+    @SerialName("country_code") val countryCode: String?,
+    @SerialName("scheduled_date") val scheduledDate: String?,
     @SerialName("total_episodes") val totalEpisodes: String?,
     @SerialName("image_portrait_url")val imagePortraitURL: String?
 )

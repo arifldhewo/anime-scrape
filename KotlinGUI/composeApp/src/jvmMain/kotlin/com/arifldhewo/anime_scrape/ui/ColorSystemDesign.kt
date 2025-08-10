@@ -5,5 +5,6 @@ enum class ColorSystemDesign(val hex: Long) {
     PRIMARY(0xFF19212d),
     ACCENT_BLUE(0xFF01c8ff),
     SUCCESS(0xFF7fff80),
-    WARNING(0xFFe9b309)
+    WARNING(0xFFe9b309),
+    ERROR(0XFFee4444)
 }
