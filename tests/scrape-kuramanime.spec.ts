@@ -10,9 +10,7 @@ test.describe("Kuramanime Scrape", () => {
 	const selectedDay = config.SELECTED_DAY;
 
 	test("For Global Setup Running", { tag: ["@kuramanime_initiate"] }, async ({ page }) => {
-		const readSearchJSON: Record<string, any> = JSON.parse(
-			Buffer.from(readFileSync(`data/search.json`)).toString(),
-		);
+		const readSearchJSON: Record<string, any> = JSON.parse(readFileSync(`data/search.json`, "utf-8"));
 
 		const searchResponse: APIResponse = await page.request.get(
 			`${kuramanimeBaseURL}/anime?search=${readSearchJSON.searchTitle}&need_json=true`,
@@ -25,15 +23,13 @@ test.describe("Kuramanime Scrape", () => {
 			searchJSON.animes.data.map((data) => data.title),
 		);
 
-		const search: iQuickResSearchAPI = JSON.parse(
-			Buffer.from(readFileSync("data/searchResult.json")).toString(),
-		);
+		const search: iQuickResSearchAPI = JSON.parse(readFileSync("data/searchResult.json", "utf-8"));
 
 		if (search.animes.data.length === 0) {
 			throw new Error("Title is not found");
 		}
 
-		const dailyAnime: AnimesData[] = JSON.parse(Buffer.from(readFileSync(`data/daily.json`)).toString());
+		const dailyAnime: AnimesData[] = JSON.parse(readFileSync(`data/daily.json`, "utf-8"));
 
 		console.log(
 			`For today (${getDay(selectedDay)}) anime schedule`,
@@ -41,9 +37,7 @@ test.describe("Kuramanime Scrape", () => {
 		);
 	});
 
-	const iniateSearch: iQuickResSearchAPI = JSON.parse(
-		Buffer.from(readFileSync("data/searchResult.json")).toString(),
-	);
+	const iniateSearch: iQuickResSearchAPI = JSON.parse(readFileSync("data/searchResult.json", "utf-8"));
 
 	if (iniateSearch.animes?.data?.length !== undefined) {
 		for (let i = 0; i < iniateSearch.animes.data.length; i++) {
@@ -51,9 +45,7 @@ test.describe("Kuramanime Scrape", () => {
 				`Scrape anime with title ${iniateSearch.animes.data[i].title}`,
 				{ tag: ["@kuramanime_search"] },
 				async ({ page }) => {
-					const search: iQuickResSearchAPI = JSON.parse(
-						Buffer.from(readFileSync("data/searchResult.json")).toString(),
-					);
+					const search: iQuickResSearchAPI = JSON.parse(readFileSync("data/searchResult.json", "utf-8"));
 
 					if (!existsSync("outputm3u")) {
 						mkdirSync("outputm3u");
@@ -113,9 +105,7 @@ test.describe("Kuramanime Scrape", () => {
 
 						await epsPage.close();
 
-						const readM3U: string = Buffer.from(
-							readFileSync(`outputm3u/${search.animes.data[i].slug}.m3u`),
-						).toString();
+						const readM3U: string = readFileSync(`outputm3u/${search.animes.data[i].slug}.m3u`, "utf-8");
 
 						if (!readM3U.includes(`Episode ${j}`)) {
 							writeFileSync(
@@ -137,7 +127,7 @@ test.describe("Kuramanime Scrape", () => {
 		}
 	}
 
-	const iniateDaily: AnimesData[] = JSON.parse(Buffer.from(readFileSync("data/daily.json")).toString());
+	const iniateDaily: AnimesData[] = JSON.parse(readFileSync("data/daily.json", "utf-8"));
 
 	if (iniateDaily.length !== undefined) {
 		for (let i = 0; i < iniateDaily.length; i++) {
@@ -145,7 +135,7 @@ test.describe("Kuramanime Scrape", () => {
 				`Kuramanime TV Series Daily: ${iniateDaily[i].title}`,
 				{ tag: ["@kuramanime_daily"] },
 				async ({ page }) => {
-					const daily: AnimesData[] = JSON.parse(Buffer.from(readFileSync("data/daily.json")).toString());
+					const daily: AnimesData[] = JSON.parse(readFileSync("data/daily.json", "utf-8"));
 					let iteration: number = 0;
 
 					if (!existsSync("outputm3u")) {
@@ -205,9 +195,10 @@ test.describe("Kuramanime Scrape", () => {
 
 						await epsPage.close();
 
-						const readM3U: string = Buffer.from(
-							readFileSync(`outputm3u/${getDay(selectedDay)}/${daily[i].slug}.m3u`),
-						).toString();
+						const readM3U: string = readFileSync(
+							`outputm3u/${getDay(selectedDay)}/${daily[i].slug}.m3u`,
+							"utf-8",
+						);
 
 						if (!readM3U.includes(`Episode ${j}`)) {
 							writeFileSync(

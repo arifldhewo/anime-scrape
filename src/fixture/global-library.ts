@@ -41,9 +41,7 @@ async function globalSetup(): Promise<void> {
 			if (i === 1) {
 				writeFileSync(`data/daily.json`, JSON.stringify(filterEps));
 			} else {
-				const readDailyJSON: AnimesData[] = JSON.parse(
-					Buffer.from(readFileSync("data/daily.json")).toString(),
-				);
+				const readDailyJSON: AnimesData[] = JSON.parse(readFileSync("data/daily.json", "utf-8"));
 
 				for (let i = 0; i < filterEps.length; i++) {
 					readDailyJSON.push(filterEps[i]);
@@ -60,9 +58,7 @@ async function globalSetup(): Promise<void> {
 		writeFileSync(`data/daily.json`, JSON.stringify(filterEps));
 	}
 
-	const readSearchJSON: Record<string, any> = JSON.parse(
-		Buffer.from(readFileSync(`data/search.json`)).toString(),
-	);
+	const readSearchJSON: Record<string, any> = JSON.parse(readFileSync(`data/search.json`, "utf-8"));
 
 	const searchResponse: APIResponse = await page.request.get(
 		`${kuramanimeBaseURL}/anime?search=${readSearchJSON.searchTitle}&need_json=true`,

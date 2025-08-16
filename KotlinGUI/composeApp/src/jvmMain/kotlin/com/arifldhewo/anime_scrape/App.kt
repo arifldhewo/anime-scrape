@@ -253,7 +253,6 @@ fun App() {
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
-
             }
         }
     }
