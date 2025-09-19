@@ -20,6 +20,12 @@ async function globalSetup(): Promise<void> {
 
 	const dailyResponse: APIResponse = await page.request.get(
 		`${kuramanimeBaseURL}/schedule?scheduled_day=${getDay(selectedDay)}&page=1&need_json=true`,
+		{
+			headers: {
+				Cookie:
+					"should_do_galak=hide; sel_timezone_v2=Asia/Bangkok; auto_timezone_v2=yes; full_timezone_v2=+07; short_timezone_v2=+07; XSRF-TOKEN=eyJpdiI6IlpXTEdSUWdlOUMvdDV1Q2s3OGdYbUE9PSIsInZhbHVlIjoibmJTNVBhNytXMHdGODQvSlNhUFY4emNTQ0htc0VqMXdBVWJqVDJkVEdxTFR0Uk5Kb2czU3hjT2FiUGtHcTI3anZEZExEMzR6aGgxQ0FnazZNbWlqUEY5d0MyQUZxNG83MTIwTnZ0ZkZrOXdZaTNhUTNlWmR6S1lBQnQ3aXpka1giLCJtYWMiOiI2MWY5ZTkwNTFiOWMyYjlmOTRhYWZhNWVmNWVlOTU3NDU1OWEzZGQ4MzE2YWI1MjQ3ZTM2Mzk5MDRhZDIwYzcyIiwidGFnIjoiIn0%3D; preferred_stserver=kuramadrive; kuramanime_session=eyJpdiI6IjllSDAxM0tMV0VjcitxVTF4TUgvdFE9PSIsInZhbHVlIjoiT05DQjJyRFY4cTNKV0FYcTNZME9BM2l1MjdLQ0JrSHNLbDJsT3FlVXZrYkxYVWJrK0RvZDhTRzVKbkZjbHhaeUFzOEhQbHk2dDNPQjlNRXVsL1ZLS3hZMnFMc0p4eVF4YUltN0tPTGdUalI2RFVVVTFBMXRiL0lqbFJjd0gwNTQiLCJtYWMiOiI1OGMyYTA2MmUxODdiNzI0ZGU1MzVmYWY4OWFkYmU1YWE1YTQwYzlmZTk5ZWRmMWIxOTk1NTNhNGI5ZmFjYmU1IiwidGFnIjoiIn0%3D",
+			},
+		},
 	);
 
 	const dailyJSON: iQuickResAPI = await dailyResponse.json();
