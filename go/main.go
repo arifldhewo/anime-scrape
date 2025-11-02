@@ -13,6 +13,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type Search struct {
@@ -28,16 +30,16 @@ type ResKuramanimeScheduleAnimes struct {
 }
 
 type ResKuramanimeScheduleData struct {
-	Title string `json:"title"`
+	Title         string `json:"title"`
 	ScheduledTime string `json:"scheduled_time"`
-	CountrCode string `json:"country_code"`
+	CountryCode   string `json:"country_code"`
 }
 
 type ReleasesGithubResponse struct {
 	TagName string `json:"tag_name"`
 }
 
-type PackageJson struct {
+type packageJSON struct {
 	Version string `json:"version"`
 }
 
@@ -52,9 +54,9 @@ func main() {
 	var kuramanimeCommand string
 	var inputType int
 	var inputDay int
+	FILE_PATH := createFileAndReturnTitle()
 
 	versionValue, err := checkVersion()
-
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -72,7 +74,6 @@ func main() {
 		fmt.Print("Input: ")
 
 		_, err := fmt.Scanln(&inputType)
-
 		if err != nil {
 			fmt.Println("Invalid Input Please enter a number")
 
@@ -106,7 +107,6 @@ func main() {
 			fmt.Print("Input: ")
 
 			_, err := fmt.Scanln(&inputDay)
-
 			if err != nil {
 				fmt.Println("Invalid input please enter number")
 
@@ -135,28 +135,59 @@ func main() {
 	}
 
 	cmd := exec.Command("npm", "run", kuramanimeCommand)
-	cmd.Env = append(os.Environ(), "DAY="+day)
+	cmd.Env = append(os.Environ(), "DAY="+day, "ANIME_FILE_TEMP="+FILE_PATH)
 
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
 	err = cmd.Run()
-
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
+func createFileAndReturnTitle() string {
+	path, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = os.Stat(path + "/data")
+	if os.IsNotExist(err) {
+		fmt.Println("Folder temp is not found will create immediately")
+		err := os.Mkdir(path+"/data", 0o775)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	id := uuid.New().String()
+	destinationPath := path + "/data/" + id + ".json"
+
+	file, err := os.Create(destinationPath)
+	if err != nil {
+		panic(err)
+	}
+
+	defer file.Close()
+
+	_, err = file.WriteString("{}")
+	if err != nil {
+		panic(err)
+	}
+
+	return id + ".json"
+}
+
 func showTodayAnimeList() error {
 	res, err := getTodayAnimeList()
-
 	if err != nil {
 		return err
 	}
 
 	fmt.Println("---------------------- Today Anime Schedule ----------------------")
 	fmt.Println("| Animes | Scheduled Time |")
-	
+
 	for i := 0; i < len(res.Animes.Data); i++ {
 		fmt.Println("| " + res.Animes.Data[i].Title + " | " + convertTimezoneLocal(res.Animes.Data[i].ScheduledTime) + " |")
 	}
@@ -167,12 +198,11 @@ func showTodayAnimeList() error {
 }
 
 func getTodayAnimeList() (ResKuramanimeScheduleRoot, error) {
-	baseUrl := "https://v8.kuramanime.tel"
+	baseURL := "https://v8.kuramanime.tel"
 
 	fmt.Print("Retrieve Today Animes")
 
-	resp, err := http.Get(baseUrl + "/schedule?scheduled_day=" + strings.ToLower(time.Now().Weekday().String()) + "&need_json=true")
-
+	resp, err := http.Get(baseURL + "/schedule?scheduled_day=" + strings.ToLower(time.Now().Weekday().String()) + "&need_json=true")
 	if err != nil {
 		return ResKuramanimeScheduleRoot{}, err
 	}
@@ -190,7 +220,7 @@ func getTodayAnimeList() (ResKuramanimeScheduleRoot, error) {
 	var filtered ResKuramanimeScheduleRoot
 
 	for _, res := range resKuramanime.Animes.Data {
-		if(res.CountrCode == "JP") {
+		if res.CountryCode == "JP" {
 			filtered.Animes.Data = append(filtered.Animes.Data, res)
 		}
 	}
@@ -223,19 +253,16 @@ func weekdayToJS(weekday string) int {
 
 func searchFlow() {
 	path, err := os.Getwd()
-
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	file, err := os.Open(path + "/data/search.json")
-
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	byteValue, err := io.ReadAll(file)
-
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -243,6 +270,9 @@ func searchFlow() {
 	var search Search
 
 	err = json.Unmarshal(byteValue, &search)
+	if err != nil {
+		panic(err)
+	}
 
 	reader := bufio.NewReader(os.Stdin)
 
@@ -258,13 +288,11 @@ func searchFlow() {
 	search.SearchTitle = fixedString
 
 	newJSON, err := json.MarshalIndent(search, "", "    ")
-
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = os.WriteFile(path+"/data/search.json", newJSON, 0644)
-
+	err = os.WriteFile(path+"/data/search.json", newJSON, 0o644)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -273,11 +301,10 @@ func searchFlow() {
 func checkVersion() (string, error) {
 	fmt.Print("Checking New Version")
 
-	baseUrl := "https://version.arifldhewo.my.id"
+	baseURL := "https://version.arifldhewo.my.id"
 	var value string
 
-	resp, err := http.Get(baseUrl + "/version/anime-scrape")
-
+	resp, err := http.Get(baseURL + "/version/anime-scrape")
 	if err != nil {
 		return err.Error(), err
 	}
@@ -287,44 +314,40 @@ func checkVersion() (string, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode > 399 && resp.StatusCode != 404 {
-		return "Check Version Rate Limit Is Reaching (422)", errors.New("Rate Limit is Reaching (422)")
-	} 
+		return "Check Version Rate Limit Is Reaching (422)", errors.New("rate Limit is Reaching (422)")
+	}
 
 	if resp.StatusCode == 404 {
-		return "Check Version baseURL Path is not found (404)", errors.New("Path Is Not Found (404)")
+		return "Check Version baseURL Path is not found (404)", errors.New("path Is Not Found (404)")
 	}
 
 	var releasesGithubResponse ReleasesGithubResponse
 
 	err = json.NewDecoder(resp.Body).Decode(&releasesGithubResponse)
-
 	if err != nil {
 		return err.Error(), err
 	}
 
 	filePackagePath, err := os.Getwd()
-
 	if err != nil {
 		return err.Error(), err
 	}
 
-	rawPackageJson, err := os.Open(filePackagePath + "\\package.json")
-
+	rawPackageJSON, err := os.Open(filePackagePath + "/package.json")
 	if err != nil {
 		return err.Error(), err
 	}
 
-	var packageJson PackageJson
+	var packageJSON packageJSON
 
-	err = json.NewDecoder(rawPackageJson).Decode(&packageJson)
-
+	err = json.NewDecoder(rawPackageJSON).Decode(&packageJSON)
 	if err != nil {
 		return err.Error(), err
 	}
 
-	if releasesGithubResponse.TagName != packageJson.Version {
-		value = fmt.Sprintf("Hey, There's a new version %s, you could git pull yeah! [current: %s] \n\n", releasesGithubResponse.TagName, packageJson.Version)
+	if releasesGithubResponse.TagName != packageJSON.Version {
+		value = fmt.Sprintf("Hey, There's a new version %s, you could git pull yeah! [current: %s] \n\n", releasesGithubResponse.TagName, packageJSON.Version)
 	}
 
-return value, nil
+	return value, nil
 }
