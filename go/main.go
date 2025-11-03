@@ -96,14 +96,13 @@ func main() {
 	if inputType == 1 {
 		for {
 			fmt.Println("What day do you want to scrape? ")
-			fmt.Println("[7] Today")
-			fmt.Println("[0] Sunday")
 			fmt.Println("[1] Monday")
 			fmt.Println("[2] Tuesday")
 			fmt.Println("[3] Wednesday")
 			fmt.Println("[4] Thursday")
 			fmt.Println("[5] Friday")
 			fmt.Println("[6] Saturday")
+			fmt.Println("[7] Sunday")
 			fmt.Print("Input: ")
 
 			_, err := fmt.Scanln(&inputDay)
@@ -115,12 +114,7 @@ func main() {
 				continue
 			}
 
-			if inputDay == 7 {
-				weekdayInJS := weekdayToJS(time.Now().Weekday().String())
-				conv := strconv.Itoa(weekdayInJS)
-				day = conv
-				break
-			} else if inputDay >= 0 && inputDay <= 6 {
+			if inputDay > 0 && inputDay < 8 {
 				conv := strconv.Itoa(inputDay)
 				day = conv
 				break
