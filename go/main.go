@@ -12,49 +12,14 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
-	"time"
-
-	"github.com/google/uuid"
 )
-
-type Search struct {
-	SearchTitle string `json:"searchTitle"`
-}
-
-type ResKuramanimeScheduleRoot struct {
-	Animes ResKuramanimeScheduleAnimes `json:"animes"`
-}
-
-type ResKuramanimeScheduleAnimes struct {
-	Data []ResKuramanimeScheduleData `json:"data"`
-}
-
-type ResKuramanimeScheduleData struct {
-	Title         string `json:"title"`
-	ScheduledTime string `json:"scheduled_time"`
-	CountryCode   string `json:"country_code"`
-}
-
-type ReleasesGithubResponse struct {
-	TagName string `json:"tag_name"`
-}
-
-type packageJSON struct {
-	Version string `json:"version"`
-}
-
-type errorHandling struct {
-	Status  int    `json:"status"`
-	Error   string `json:"error"`
-	Message string `json:"message"`
-}
 
 func main() {
 	var day string
 	var kuramanimeCommand string
 	var inputType int
 	var inputDay int
-	FILE_PATH := createFileAndReturnTitle()
+	FILE_PATH := CreateFileAndReturnTitle()
 
 	versionValue, err := checkVersion()
 	if err != nil {
@@ -63,9 +28,7 @@ func main() {
 
 	fmt.Printf("%s", versionValue)
 
-	if err = showTodayAnimeList(); err != nil {
-		log.Fatal(err)
-	}
+	// interface to call different function based on config
 
 	for {
 		fmt.Println("What do you want to scrape? ")
@@ -140,111 +103,6 @@ func main() {
 	}
 }
 
-func createFileAndReturnTitle() string {
-	path, err := os.Getwd()
-	if err != nil {
-		panic(err)
-	}
-
-	_, err = os.Stat(path + "/data")
-	if os.IsNotExist(err) {
-		fmt.Println("Folder temp is not found will create immediately")
-		err := os.Mkdir(path+"/data", 0o775)
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	id := uuid.New().String()
-	destinationPath := path + "/data/" + id + ".json"
-
-	file, err := os.Create(destinationPath)
-	if err != nil {
-		panic(err)
-	}
-
-	defer file.Close()
-
-	_, err = file.WriteString("{}")
-	if err != nil {
-		panic(err)
-	}
-
-	return id + ".json"
-}
-
-func showTodayAnimeList() error {
-	res, err := getTodayAnimeList()
-	if err != nil {
-		return err
-	}
-
-	fmt.Println("---------------------- Today Anime Schedule ----------------------")
-	fmt.Println("| Animes | Scheduled Time |")
-
-	for i := 0; i < len(res.Animes.Data); i++ {
-		fmt.Println("| " + res.Animes.Data[i].Title + " | " + convertTimezoneLocal(res.Animes.Data[i].ScheduledTime) + " |")
-	}
-
-	fmt.Println()
-
-	return nil
-}
-
-func getTodayAnimeList() (ResKuramanimeScheduleRoot, error) {
-	baseURL := "https://v8.kuramanime.tel"
-
-	fmt.Print("Retrieve Today Animes")
-
-	resp, err := http.Get(baseURL + "/schedule?scheduled_day=" + strings.ToLower(time.Now().Weekday().String()) + "&need_json=true")
-	if err != nil {
-		return ResKuramanimeScheduleRoot{}, err
-	}
-
-	fmt.Print("\r")
-
-	defer resp.Body.Close()
-
-	var resKuramanime ResKuramanimeScheduleRoot
-
-	if err = json.NewDecoder(resp.Body).Decode(&resKuramanime); err != nil {
-		return ResKuramanimeScheduleRoot{}, nil
-	}
-
-	var filtered ResKuramanimeScheduleRoot
-
-	for _, res := range resKuramanime.Animes.Data {
-		if res.CountryCode == "JP" {
-			filtered.Animes.Data = append(filtered.Animes.Data, res)
-		}
-	}
-
-	return filtered, nil
-}
-
-func convertTimezoneLocal(date string) string {
-	utcTime, _ := time.Parse(time.RFC3339, date)
-
-	localTime := utcTime.Local()
-
-	constructedTime := fmt.Sprintf("%d:%d", localTime.Hour(), localTime.Minute())
-
-	return constructedTime
-}
-
-func weekdayToJS(weekday string) int {
-	availableDays := [7]string{"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"}
-	var selectedDays int
-
-	for i := 0; i < len(availableDays); i++ {
-		if availableDays[i] == weekday {
-			selectedDays = i
-		}
-	}
-
-	return selectedDays
-}
-
 func searchFlow() {
 	path, err := os.Getwd()
 	if err != nil {
@@ -265,7 +123,7 @@ func searchFlow() {
 
 	err = json.Unmarshal(byteValue, &search)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	reader := bufio.NewReader(os.Stdin)
@@ -332,7 +190,7 @@ func checkVersion() (string, error) {
 		return err.Error(), err
 	}
 
-	var packageJSON packageJSON
+	var packageJSON PackageJSON
 
 	err = json.NewDecoder(rawPackageJSON).Decode(&packageJSON)
 	if err != nil {
