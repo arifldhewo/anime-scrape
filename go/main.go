@@ -19,6 +19,7 @@ func main() {
 	var kuramanimeCommand string
 	var inputType int
 	var inputDay int
+	var inputSetProvider int
 	FILE_PATH := CreateFileAndReturnTitle()
 	config := ReadConfigFile()
 
@@ -55,7 +56,12 @@ func main() {
 			kuramanimeCommand = "kuramanime-search"
 			break
 		} else if inputType == 3 {
-			// todo
+			fmt.Println("Avaialble Provider: ")
+			for i := 0; i < len(config.Provider.AvailableProviders); i++ {
+				fmt.Printf("[%d]: %s \n", i, config.Provider.AvailableProviders[i])
+				fmt.Print("Input: ")
+				fmt.Scanln(&inputSetProvider)
+			}
 		} else {
 			fmt.Println("Please enter valid option 1, 2 or 3")
 		}
@@ -94,6 +100,9 @@ func main() {
 
 	if inputType == 2 {
 		searchFlow()
+	}
+
+	if inputType == 3 {
 	}
 
 	cmd := exec.Command("npm", "run", kuramanimeCommand)
