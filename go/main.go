@@ -20,6 +20,7 @@ func main() {
 	var inputType int
 	var inputDay int
 	FILE_PATH := CreateFileAndReturnTitle()
+	config := ReadConfigFile()
 
 	versionValue, err := checkVersion()
 	if err != nil {
@@ -31,9 +32,11 @@ func main() {
 	// interface to call different function based on config
 
 	for {
+		fmt.Printf("Current Provider: %s \n", config.Provider.SetValue)
 		fmt.Println("What do you want to scrape? ")
-		fmt.Println("[1] Kuramanime Daily")
-		fmt.Println("[2] Kuramanime Search")
+		fmt.Println("[1] Daily")
+		fmt.Println("[2] Search")
+		fmt.Println("[3] Set Another Provider")
 		fmt.Print("Input: ")
 
 		_, err := fmt.Scanln(&inputType)
@@ -51,8 +54,10 @@ func main() {
 		} else if inputType == 2 {
 			kuramanimeCommand = "kuramanime-search"
 			break
+		} else if inputType == 3 {
+			// todo
 		} else {
-			fmt.Println("Please enter valid option 1 or 2")
+			fmt.Println("Please enter valid option 1, 2 or 3")
 		}
 	}
 
