@@ -1,6 +1,8 @@
 {
-	"provider": {
-		"setValue": "kuramanime",
-		"availableProviders": ["kuramanime"]
-	}
+    "Provider": {
+        "setProvider": 0,
+        "availableProviders": [
+            "Kuramanime"
+        ]
+    }
 }
