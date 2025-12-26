@@ -12,6 +12,7 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func main() {
@@ -19,7 +20,9 @@ func main() {
 	var kuramanimeCommand string
 	var inputType int
 	var inputDay int
+	var inputSetProvider int
 	FILE_PATH := CreateFileAndReturnTitle()
+	config := ReadConfigFile()
 
 	versionValue, err := checkVersion()
 	if err != nil {
@@ -30,10 +33,16 @@ func main() {
 
 	// interface to call different function based on config
 
+	if err = showTodayAnimeList(); err != nil {
+		log.Fatal(err)
+	}
+
 	for {
+		fmt.Printf("Current Provider: %s \n", config.Provider.SetValue)
 		fmt.Println("What do you want to scrape? ")
-		fmt.Println("[1] Kuramanime Daily")
-		fmt.Println("[2] Kuramanime Search")
+		fmt.Println("[1] Daily")
+		fmt.Println("[2] Search")
+		fmt.Println("[3] Set Another Provider")
 		fmt.Print("Input: ")
 
 		_, err := fmt.Scanln(&inputType)
@@ -51,8 +60,15 @@ func main() {
 		} else if inputType == 2 {
 			kuramanimeCommand = "kuramanime-search"
 			break
+		} else if inputType == 3 {
+			fmt.Println("Avaialble Provider: ")
+			for i := 0; i < len(config.Provider.AvailableProviders); i++ {
+				fmt.Printf("[%d]: %s \n", i, config.Provider.AvailableProviders[i])
+				fmt.Print("Input: ")
+				fmt.Scanln(&inputSetProvider)
+			}
 		} else {
-			fmt.Println("Please enter valid option 1 or 2")
+			fmt.Println("Please enter valid option 1, 2 or 3")
 		}
 	}
 
@@ -89,6 +105,9 @@ func main() {
 
 	if inputType == 2 {
 		searchFlow()
+	}
+
+	if inputType == 3 {
 	}
 
 	cmd := exec.Command("npm", "run", kuramanimeCommand)
@@ -202,4 +221,53 @@ func checkVersion() (string, error) {
 	}
 
 	return value, nil
+}
+
+func showTodayAnimeList() error {
+	res, err := getTodayAnimeList()
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("---------------------- Today Anime Schedule ----------------------")
+	fmt.Println("| Animes | Scheduled Time |")
+
+	for i := 0; i < len(res.Animes.Data); i++ {
+		fmt.Println("| " + res.Animes.Data[i].Title + " | " + convertTimezoneLocal(res.Animes.Data[i].ScheduledTime) + " |")
+	}
+
+	fmt.Println()
+
+	return nil
+}
+
+func getTodayAnimeList() (ResKuramanimeScheduleRoot, error) {
+	baseURL := "https://v8.kuramanime.tel"
+
+	fmt.Print("Retrieve Today Animes")
+
+	resp, err := http.Get(baseURL + "/schedule?scheduled_day=" + strings.ToLower(time.Now().Weekday().String()) + "&need_json=true")
+	if err != nil {
+		return ResKuramanimeScheduleRoot{}, err
+	}
+
+	fmt.Print("\r")
+
+	defer resp.Body.Close()
+
+	var resKuramanime ResKuramanimeScheduleRoot
+
+	if err = json.NewDecoder(resp.Body).Decode(&resKuramanime); err != nil {
+		return ResKuramanimeScheduleRoot{}, nil
+	}
+
+	var filtered ResKuramanimeScheduleRoot
+
+	for _, res := range resKuramanime.Animes.Data {
+		if res.CountryCode == "JP" {
+			filtered.Animes.Data = append(filtered.Animes.Data, res)
+		}
+	}
+
+	return filtered, nil
 }
