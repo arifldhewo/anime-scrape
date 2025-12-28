@@ -84,13 +84,15 @@ func (k Kuramanime) RunCommand(day int, search string) (tea.Cmd, error) {
 		return nil, err
 	}
 
-	fmt.Println("DAY=", day)
-	fmt.Println("Search=", search)
-
 	getCommand := k.GetCommand()
 
 	var selectedCommand string
 	if search != "" {
+
+		if err := helpers.WriteSearchFile(search); err != nil {
+			return nil, err
+		}
+
 		selectedCommand = getCommand.Search
 	} else {
 		selectedCommand = getCommand.Daily
@@ -102,7 +104,7 @@ func (k Kuramanime) RunCommand(day int, search string) (tea.Cmd, error) {
 	if search != "" {
 		cmd.Env = append(os.Environ(), "ANIME_FILE_TEMP="+fileName)
 	} else {
-		cmd.Env = append(os.Environ(), "DAY="+strconv.Itoa(day), "ANIME_FILE_TEMP="+fileName)
+		cmd.Env = append(os.Environ(), "DAY="+strconv.Itoa(day+1), "ANIME_FILE_TEMP="+fileName)
 	}
 
 	cmd.Stdout = os.Stdout
@@ -110,7 +112,7 @@ func (k Kuramanime) RunCommand(day int, search string) (tea.Cmd, error) {
 
 	err = cmd.Run()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	return nil, nil

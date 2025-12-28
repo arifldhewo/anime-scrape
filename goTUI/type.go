@@ -39,10 +39,10 @@ type MainModel struct {
 		AppVersionMessage string
 		AnimeDaily        []extension.AnimeDaily
 	}
-	DailyPage   SelectModel
-	SearchInput TypeModel
-	ConfigPage  SelectModel
-	ExecPage    struct {
+	DailyPage  SelectModel
+	SearchPage TypeModel
+	ConfigPage SelectModel
+	ExecPage   struct {
 		Method struct {
 			Daily  map[int]struct{}
 			Search string

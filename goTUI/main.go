@@ -33,7 +33,7 @@ func initialModel() MainModel {
 		}{
 			SelectModel: SelectModel{
 				Title:   "What do you want to do? [Adjust the terminal size if get truncated] \n\n",
-				Choices: []string{"Daily", "Search [WIP]", "Config"},
+				Choices: []string{"Daily", "Search", "Config"},
 				Cursor:  0,
 			},
 		},
@@ -50,7 +50,7 @@ func initialModel() MainModel {
 			},
 			Cursor: 0,
 		},
-		SearchInput: TypeModel{
+		SearchPage: TypeModel{
 			Title:     "What do you want to search? | [Esc] Prev Menu\n\n",
 			TextInput: SearchInput,
 		},
@@ -221,7 +221,7 @@ func SearchUpdate(msg tea.Msg, m MainModel) (tea.Model, tea.Cmd) {
 			m.State = 1
 
 		case "enter":
-			m.ExecPage.Method.Search = m.SearchInput.TextInput.Value()
+			m.ExecPage.Method.Search = m.SearchPage.TextInput.Value()
 			m.State = 3
 
 		case "ctrl+c":
@@ -229,7 +229,7 @@ func SearchUpdate(msg tea.Msg, m MainModel) (tea.Model, tea.Cmd) {
 		}
 	}
 
-	m.SearchInput.TextInput, cmd = m.SearchInput.TextInput.Update(msg)
+	m.SearchPage.TextInput, cmd = m.SearchPage.TextInput.Update(msg)
 	return m, cmd
 }
 
@@ -238,9 +238,12 @@ func ExecUpdate(msg tea.Msg, m MainModel) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		if msg.String() == "enter" && !m.ExecPage.isRunning {
 			m.ExecPage.isRunning = true
-			extension.FactoryCommand(m.DailyPage.Selected, m.SearchInput.TextInput.Value())
+			extension.FactoryCommand(m.DailyPage.Selected, m.SearchPage.TextInput.Value())
+			m.ExecPage.isRunning = false
+			m.SearchPage.TextInput.Reset()
 			m.State = 1
 		}
+
 		switch msg.String() {
 		case "ctrl+c":
 			return nil, tea.Quit
@@ -287,7 +290,7 @@ func ConfigUpdate(msg tea.Msg, m MainModel) (tea.Model, tea.Cmd) {
 
 func (m MainModel) View() string {
 
-	s := "Press Enter to Proceed \n\n"
+	s := "Press Enter to Proceed / Retry \n\n"
 
 	switch m.State {
 	case 1:
@@ -372,7 +375,7 @@ func DailyView(m MainModel) string {
 }
 
 func SearchView(m MainModel) string {
-	return fmt.Sprintf("%s\n Input: %s \n\n Press ctrl+c to Quit", m.SearchInput.Title, m.SearchInput.TextInput.View())
+	return fmt.Sprintf("%s\n Input: %s \n\n Press ctrl+c to Quit", m.SearchPage.Title, m.SearchPage.TextInput.View())
 }
 
 func ConfigView(m MainModel) string {

@@ -64,6 +64,33 @@ func WriteFileConfig(setProviderIndex int) {
 	err = os.WriteFile(path, contentMarshalJSON, 0o644)
 }
 
+func WriteSearchFile(search string) error {
+	cwd, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+
+	path := fmt.Sprintf("%s/data/search.json", cwd)
+
+	searchStruct := struct {
+		SearchTitle string `json:"searchTitle"`
+	}{
+		SearchTitle: search,
+	}
+
+	searchMarshal, err := json.MarshalIndent(searchStruct, "", "    ")
+	if err != nil {
+		return err
+	}
+
+	err = os.WriteFile(path, searchMarshal, 0644)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func CreateFileTempAndReturnTitle() (string, error) {
 	path, err := os.Getwd()
 	if err != nil {
