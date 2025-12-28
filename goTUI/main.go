@@ -2,18 +2,16 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
-	"os/exec"
-	"strconv"
 
 	"example.com/bubbletea/extension"
+	"example.com/bubbletea/helpers"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 func main() {
-	p := tea.NewProgram(initialModel())
+	p := tea.NewProgram(initialModel(), tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Alas, there's been an error: %v", err)
 		os.Exit(1)
@@ -34,7 +32,7 @@ func initialModel() MainModel {
 			AnimeDaily        []extension.AnimeDaily
 		}{
 			SelectModel: SelectModel{
-				Title:   "What do you want to do?\n\n",
+				Title:   "What do you want to do? [Adjust the terminal size if get truncated] \n\n",
 				Choices: []string{"Daily", "Search [WIP]", "Config"},
 				Cursor:  0,
 			},
@@ -76,19 +74,21 @@ func initialModel() MainModel {
 }
 
 func (m MainModel) Init() tea.Cmd {
-	return InitApp
+	return tea.Batch(
+		InitApp,
+		tea.SetWindowTitle("Anime Scrape"),
+	)
 }
 
 func InitApp() tea.Msg {
-	version, err := GetAppVersion()
+	version, err := helpers.GetAppVersion()
 	if err != nil {
-		log.Fatal(err)
 		return InitResult{
 			Err: err,
 		}
 	}
 
-	config := ReadFileConfig()
+	config := helpers.ReadFileConfig()
 	var bp extension.BaseExtension
 	var animeDaily []extension.AnimeDaily
 
@@ -100,7 +100,6 @@ func InitApp() tea.Msg {
 
 		animeDaily, err = bp.AnimeDaily()
 		if err != nil {
-			log.Fatal(err)
 			return InitResult{
 				Err: err,
 			}
@@ -181,7 +180,6 @@ func InitUpdate(msg tea.Msg, m MainModel) (tea.Model, tea.Cmd) {
 }
 
 func DailyUpdate(msg tea.Msg, m MainModel) (tea.Model, tea.Cmd) {
-
 	switch msg := msg.(type) {
 
 	case tea.KeyMsg:
@@ -225,11 +223,9 @@ func SearchUpdate(msg tea.Msg, m MainModel) (tea.Model, tea.Cmd) {
 		case "enter":
 			m.ExecPage.Method.Search = m.SearchInput.TextInput.Value()
 			m.State = 3
-		}
 
-		switch msg.Type {
-		case tea.KeyCtrlC:
-			return m, tea.Quit
+		case "ctrl+c":
+			return nil, tea.Quit
 		}
 	}
 
@@ -237,10 +233,27 @@ func SearchUpdate(msg tea.Msg, m MainModel) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
+func ExecUpdate(msg tea.Msg, m MainModel) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		if msg.String() == "enter" && !m.ExecPage.isRunning {
+			m.ExecPage.isRunning = true
+			extension.FactoryCommand(m.DailyPage.Selected, m.SearchInput.TextInput.Value())
+			m.State = 1
+		}
+		switch msg.String() {
+		case "ctrl+c":
+			return nil, tea.Quit
+		}
+	}
+
+	return m, nil
+}
+
 func ConfigUpdate(msg tea.Msg, m MainModel) (tea.Model, tea.Cmd) {
 
 	if len(m.ConfigPage.Choices) == 0 {
-		configJSON := ReadFileConfig()
+		configJSON := helpers.ReadFileConfig()
 
 		m.ConfigPage.Selected = configJSON.Provider.SetProvider
 
@@ -265,50 +278,16 @@ func ConfigUpdate(msg tea.Msg, m MainModel) (tea.Model, tea.Cmd) {
 
 		case "enter", " ":
 			m.ConfigPage.Selected = m.ConfigPage.Cursor
-			WriteFileConfig(m.ConfigPage.Selected)
+			helpers.WriteFileConfig(m.ConfigPage.Selected)
 		}
 	}
 
 	return m, nil
 }
 
-func ExecUpdate(msg tea.Msg, m MainModel) (tea.Model, tea.Cmd) {
-	fileName, err := CreateFileTempAndReturnTitle()
-	if err != nil {
-		m.ExecPage.Err = err
-		panic(err)
-	}
-
-	switch m.ExecPage.isRunning {
-	case true:
-		return m, nil
-	}
-
-	// determine by provider that used and method, daily | search
-	//need to seperate by package helper, types to able to use correctly and able to determine in those file not this.
-	var kuramanime extension.Kuramanime
-
-	determineCommand := extension.DetermineCommand(kuramanime, m.ExecPage.Method.Daily, m.ExecPage.Method.Search)
-
-	command := fmt.Sprintf("%s", determineCommand)
-
-	cmd := exec.Command("npm", "run", command)
-	cmd.Env = append(os.Environ(), "DAY="+strconv.Itoa(m.DailyPage.Selected+1), "ANIME_FILE_TEMP="+fileName)
-
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	err = cmd.Run()
-	if err != nil {
-		panic(err)
-	}
-
-	return m, tea.Quit
-}
-
 func (m MainModel) View() string {
 
-	s := "What do you want to scrape? \n\n"
+	s := "Press Enter to Proceed \n\n"
 
 	switch m.State {
 	case 1:
@@ -333,7 +312,9 @@ func (m MainModel) View() string {
 }
 
 func InitView(m MainModel) string {
-	s := "\n" + m.InitPage.AppVersionMessage
+	var s string
+
+	s += "\n" + m.InitPage.AppVersionMessage
 
 	var tableData [][]string
 	header := []string{"Title", "Schedule"}
@@ -341,13 +322,13 @@ func InitView(m MainModel) string {
 	for _, anime := range m.InitPage.AnimeDaily {
 		row := []string{
 			anime.Title,
-			ConvertTimezoneLocal(anime.Schedule),
+			helpers.ConvertTimezoneLocal(anime.Schedule),
 		}
 
 		tableData = append(tableData, row)
 	}
 
-	tableDaily := RenderTable(tableData, header)
+	tableDaily := helpers.RenderTable(tableData, header)
 
 	s += tableDaily.Render()
 
@@ -397,7 +378,7 @@ func SearchView(m MainModel) string {
 func ConfigView(m MainModel) string {
 	s := "\n" + m.ConfigPage.Title
 
-	configJSON := ReadFileConfig()
+	configJSON := helpers.ReadFileConfig()
 
 	s += fmt.Sprintf("Current provider used: %s \n", configJSON.Provider.AvailableProviders[configJSON.Provider.SetProvider])
 	s += "List available providers: \n"

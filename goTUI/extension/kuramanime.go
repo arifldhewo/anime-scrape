@@ -6,8 +6,14 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
+	"os/exec"
+	"strconv"
 	"strings"
 	"time"
+
+	"example.com/bubbletea/helpers"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 type Kuramanime struct {
@@ -70,4 +76,42 @@ func (k Kuramanime) GetCommand() CommandSyntax {
 	k.command.Search = "kuramanime-search"
 
 	return k.command
+}
+
+func (k Kuramanime) RunCommand(day int, search string) (tea.Cmd, error) {
+	fileName, err := helpers.CreateFileTempAndReturnTitle()
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println("DAY=", day)
+	fmt.Println("Search=", search)
+
+	getCommand := k.GetCommand()
+
+	var selectedCommand string
+	if search != "" {
+		selectedCommand = getCommand.Search
+	} else {
+		selectedCommand = getCommand.Daily
+	}
+
+	fmt.Println(selectedCommand)
+
+	cmd := exec.Command("npm", "run", selectedCommand)
+	if search != "" {
+		cmd.Env = append(os.Environ(), "ANIME_FILE_TEMP="+fileName)
+	} else {
+		cmd.Env = append(os.Environ(), "DAY="+strconv.Itoa(day), "ANIME_FILE_TEMP="+fileName)
+	}
+
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	err = cmd.Run()
+	if err != nil {
+		panic(err)
+	}
+
+	return nil, nil
 }
