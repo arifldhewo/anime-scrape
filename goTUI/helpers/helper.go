@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"example.com/bubbletea/types"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/table"
 	"github.com/google/uuid"
@@ -130,7 +131,7 @@ func CreateFileTempAndReturnTitle() (string, error) {
 	return id + ".json", nil
 }
 
-func GetAppVersion() (string, error) {
+func CheckAppNewVersion() (string, error) {
 	// Retrieve From Github Server
 	baseURL := "https://version.arifldhewo.my.id"
 	var appVerRelease types.ReleaseGithubResponse
@@ -227,4 +228,110 @@ func RenderTable(data [][]string, header []string) *table.Table {
 		}).Headers(header...).Rows(data...)
 
 	return t
+}
+
+func AppUpdater() tea.Cmd {
+	return func() tea.Msg {
+		// check differentiation version
+		baseURL := "https://version.arifldhewo.my.id"
+		var appVerRelease types.ReleaseGithubResponse
+
+		resAppVersion, err := http.Get(baseURL + "/version/anime-scrape")
+		if err != nil {
+			return types.AppUpdater{
+				Description: err.Error(),
+			}
+		}
+
+		defer resAppVersion.Body.Close()
+
+		if resAppVersion.StatusCode >= 400 && resAppVersion.StatusCode <= 599 {
+			return types.AppUpdater{
+				Description: fmt.Sprintf("Response Err Code: %d", resAppVersion.StatusCode),
+			}
+		}
+
+		body, err := io.ReadAll(resAppVersion.Body)
+		if err != nil {
+			return types.AppUpdater{
+				Description: fmt.Sprintf("Error: %v", err),
+			}
+		}
+
+		json.Unmarshal(body, &appVerRelease)
+
+		// Read Package JSON
+		var appVerCurrent types.PackageJSON
+
+		cwd, err := os.Getwd()
+		if err != nil {
+			return types.AppUpdater{
+				Description: fmt.Sprintf("Error: %v", err),
+			}
+		}
+
+		// TODO! If needed run to debug change this with /../
+		path := cwd + "/package.json"
+
+		appVerByte, err := os.ReadFile(path)
+		if err != nil {
+			return types.AppUpdater{
+				Description: fmt.Sprintf("Error: %v", err),
+			}
+		}
+
+		json.Unmarshal(appVerByte, &appVerCurrent)
+
+		if appVerCurrent.Version != appVerRelease.TagName {
+			// download the zip to temp folder
+			cwd, err := os.Getwd()
+			if err != nil {
+				return types.AppUpdater{
+					Description: fmt.Sprintf("Error: %v", err),
+				}
+			}
+
+			file, err := os.Create(fmt.Sprintf("%s/data/%s.zip", cwd, appVerRelease.TagName))
+			if err != nil {
+				return types.AppUpdater{
+					Description: fmt.Sprintf("Error: %v", err),
+				}
+			}
+			defer file.Close()
+
+			res, err := http.Get(fmt.Sprintf("https://codeload.github.com/arifldhewo/anime-scrape/zip/refs/tags/%s", appVerRelease.TagName))
+			if err != nil {
+				return types.AppUpdater{
+					Description: fmt.Sprintf("Error: %v", err),
+				}
+			}
+			defer res.Body.Close()
+
+			if res.StatusCode >= 400 && res.StatusCode <= 599 {
+				return types.AppUpdater{
+					Description: fmt.Sprintf("Error: %v", err),
+				}
+			}
+
+			// move file into the actual physical disk
+			_, err = io.Copy(file, res.Body)
+			if err != nil {
+				return types.AppUpdater{
+					Description: fmt.Sprintf("Error: %v", err),
+				}
+			}
+
+			return types.AppUpdater{
+				Description:      fmt.Sprintf("Download update complete with version: %s", appVerRelease.TagName),
+				AppNewestVersion: appVerRelease.TagName,
+			}
+
+			// do replace file to the all existing folder
+		} else {
+			return types.AppUpdater{
+				Description:      "Your app already in latest version",
+				AppNewestVersion: appVerRelease.TagName,
+			}
+		}
+	}
 }

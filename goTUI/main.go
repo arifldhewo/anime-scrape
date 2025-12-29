@@ -6,6 +6,7 @@ import (
 
 	"example.com/bubbletea/extension"
 	"example.com/bubbletea/helpers"
+	"example.com/bubbletea/types"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -33,7 +34,7 @@ func initialModel() MainModel {
 		}{
 			SelectModel: SelectModel{
 				Title:   "What do you want to do? [Adjust the terminal size if get truncated] \n\n",
-				Choices: []string{"Daily", "Search", "Config"},
+				Choices: []string{"Daily", "Search", "Config", "Updater"},
 				Cursor:  0,
 			},
 		},
@@ -70,6 +71,13 @@ func initialModel() MainModel {
 		}{
 			isRunning: false,
 		},
+		UpdaterPage: struct {
+			Description      string
+			IsLoading        bool
+			AppNewestVersion string
+		}{
+			IsLoading: false,
+		},
 	}
 }
 
@@ -81,7 +89,7 @@ func (m MainModel) Init() tea.Cmd {
 }
 
 func InitApp() tea.Msg {
-	version, err := helpers.GetAppVersion()
+	version, err := helpers.CheckAppNewVersion()
 	if err != nil {
 		return InitResult{
 			Err: err,
@@ -135,6 +143,8 @@ func (m MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case 2:
 			// return config flow
 			return ConfigUpdate(msg, m)
+		case 3:
+			return AppUpdate(msg, m)
 		}
 	case 3:
 		// return the exec function
@@ -236,7 +246,7 @@ func SearchUpdate(msg tea.Msg, m MainModel) (tea.Model, tea.Cmd) {
 func ExecUpdate(msg tea.Msg, m MainModel) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		if msg.String() == "enter" && !m.ExecPage.isRunning {
+		if msg.String() == "r" && m.ExecPage.isRunning == false {
 			m.ExecPage.isRunning = true
 			extension.FactoryCommand(m.DailyPage.Selected, m.SearchPage.TextInput.Value())
 			m.ExecPage.isRunning = false
@@ -247,6 +257,11 @@ func ExecUpdate(msg tea.Msg, m MainModel) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "ctrl+c":
 			return nil, tea.Quit
+		case "esc":
+			m.ExecPage.isRunning = false
+			m.State = 1
+			m.SearchPage.TextInput.Reset()
+			return m, nil
 		}
 	}
 
@@ -288,9 +303,32 @@ func ConfigUpdate(msg tea.Msg, m MainModel) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
+func AppUpdate(msg tea.Msg, m MainModel) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "ctrl+c":
+			return m, tea.Quit
+		case "u":
+			m.UpdaterPage.IsLoading = true
+			return m, helpers.AppUpdater()
+		case "esc":
+			m.UpdaterPage.IsLoading = false
+			m.UpdaterPage.Description = ""
+			m.State = 1
+		}
+
+	case types.AppUpdater:
+		m.UpdaterPage.Description = msg.Description
+		m.UpdaterPage.AppNewestVersion = msg.AppNewestVersion
+	}
+
+	return m, nil
+}
+
 func (m MainModel) View() string {
 
-	s := "Press Enter to Proceed / Retry \n\n"
+	s := ""
 
 	switch m.State {
 	case 1:
@@ -307,8 +345,11 @@ func (m MainModel) View() string {
 			// return config flow
 			return ConfigView(m)
 		case 3:
-			// return view from command stream
+			// return updater flow
+			return UpdaterView(m)
 		}
+	case 3:
+		return ExecView(m)
 	}
 
 	return s
@@ -335,9 +376,7 @@ func InitView(m MainModel) string {
 
 	s += tableDaily.Render()
 
-	s += "\n" + m.InitPage.Title
-
-	s += "\n"
+	s += "\n " + m.InitPage.Title
 
 	for i, choice := range m.InitPage.Choices {
 		cursor := " "
@@ -347,16 +386,16 @@ func InitView(m MainModel) string {
 			checked = "x"
 		}
 
-		s += fmt.Sprintf("%s [%s] %v \n", cursor, checked, choice)
+		s += fmt.Sprintf(" %s [%s] %v \n", cursor, checked, choice)
 	}
 
-	s += "\nPress ctrl+c to Quit\n"
+	s += "\n Press ctrl+c to Quit\n"
 
 	return s
 }
 
 func DailyView(m MainModel) string {
-	s := m.DailyPage.Title
+	s := " " + m.DailyPage.Title
 
 	for i, choice := range m.DailyPage.Choices {
 		cursor := " "
@@ -366,25 +405,25 @@ func DailyView(m MainModel) string {
 			checked = "x"
 		}
 
-		s += fmt.Sprintf("%s [%s] %v \n", cursor, checked, choice)
+		s += fmt.Sprintf(" %s [%s] %v \n", cursor, checked, choice)
 	}
 
-	s += "\nPress ctrl+c to Quit\n"
+	s += "\n Press ctrl+c to Quit\n"
 
 	return s
 }
 
 func SearchView(m MainModel) string {
-	return fmt.Sprintf("%s\n Input: %s \n\n Press ctrl+c to Quit", m.SearchPage.Title, m.SearchPage.TextInput.View())
+	return fmt.Sprintf(" %s\n Input: %s \n\n Press ctrl+c to Quit", m.SearchPage.Title, m.SearchPage.TextInput.View())
 }
 
 func ConfigView(m MainModel) string {
-	s := "\n" + m.ConfigPage.Title
+	s := " " + m.ConfigPage.Title
 
 	configJSON := helpers.ReadFileConfig()
 
 	s += fmt.Sprintf("Current provider used: %s \n", configJSON.Provider.AvailableProviders[configJSON.Provider.SetProvider])
-	s += "List available providers: \n"
+	s += " List available providers: \n"
 
 	for i, available := range configJSON.Provider.AvailableProviders {
 		cursor := " "
@@ -394,10 +433,37 @@ func ConfigView(m MainModel) string {
 			checked = "x"
 		}
 
-		s += fmt.Sprintf("%s [%s] %v \n", cursor, checked, available)
+		s += fmt.Sprintf(" %s [%s] %v \n", cursor, checked, available)
 	}
 
 	s += "\nPress ctrl+c to Quit"
+
+	return s
+}
+
+func ExecView(m MainModel) string {
+	s := "\n Press r to run the scrape"
+
+	return s
+}
+
+func UpdaterView(m MainModel) string {
+	s := " Press u for running updater \n\n Press Esc for going back to main menu \n Press ctrl+c to Quit"
+
+	if m.UpdaterPage.IsLoading == true {
+		s = "\n Downloading, please wait"
+	}
+	if m.UpdaterPage.Description != "" {
+		s = "\n" + m.UpdaterPage.Description
+		if m.UpdaterPage.Description != "Your app already in latest version" {
+			s += "\n [1] It's only download the update. you need to replace the file and folder MANUALLY!"
+			s += fmt.Sprintf("\n [2] Find file with name %s.zip", m.UpdaterPage.AppNewestVersion)
+			s += "\n [3] The location is in `scrape-location/data` folder"
+			s += "\n [4] Then extract the zip file and copy and replace all extracted files into your main folder. DON'T FORGET TO CLOSE THIS APPS"
+		}
+		s += "\n\n Press Esc for going back to main menu"
+		s += "\n Press ctrl+c to Quit\n"
+	}
 
 	return s
 }

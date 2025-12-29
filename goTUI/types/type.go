@@ -16,3 +16,8 @@ type Provider struct {
 	SetProvider        int      `json:"setProvider"`
 	AvailableProviders []string `json:"availableProviders"`
 }
+
+type AppUpdater struct {
+	Description      string
+	AppNewestVersion string
+}
