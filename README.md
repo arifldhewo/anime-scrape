@@ -1,3 +1,7 @@
+# What is this for?
+Basically this is for my personal approach to watch anime without seeing pop-up ads, banner ads, and all kinda ads that source is came. So I make this scrape for me to watch without interuppted with ads and it's streaming not fully downloaded.
+And checkout to this project if you want to submit your watch progress into your own myanimelist.net account while watching. [mpv-myanimelist](https://github.com/arifldhewo/mpv-myanimelist) 
+
 # This is tutorial how to operate this scripts
 
 ##### After clone this repository please do the pre-requisite
