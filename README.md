@@ -5,12 +5,11 @@
 - `npm install` wait until it's finish
 - `npx playwright install` wait until it's finish
 
-# How to use search feature?
-
 ##### After successfully install all above requirement
 
-1. Open main.exe
-2. and type 1 or 2
-3. 1 is for daily anime that based on weekdays
-4. 2 is for specific search on kuramanime
-5. after that enter, and wait until the process is completed
+1. Open windowsTUI.exe or linuxtui
+2. And choose for Daily | Search | Config | Updater
+3. daily stands for scrape base on current set provider
+4. search is for specific search on current set provider
+5. after just follow through and wait the scrape finish
+6. the result in folder outputm3u folder
