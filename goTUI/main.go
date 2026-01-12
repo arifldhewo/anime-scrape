@@ -358,8 +358,6 @@ func (m MainModel) View() string {
 func InitView(m MainModel) string {
 	var s string
 
-	s += "\n" + m.InitPage.AppVersionMessage
-
 	var tableData [][]string
 	header := []string{"Title", "Schedule"}
 
@@ -375,6 +373,8 @@ func InitView(m MainModel) string {
 	tableDaily := helpers.RenderTable(tableData, header)
 
 	s += tableDaily.Render()
+
+	s += "\n" + m.InitPage.AppVersionMessage
 
 	s += "\n " + m.InitPage.Title
 
