@@ -35,7 +35,7 @@ type ResKuramanimeScheduleData struct {
 }
 
 func (k Kuramanime) AnimeDaily() ([]AnimeDaily, error) {
-	baseURL := "https://v15.kuramanime.tel"
+	baseURL := "https://v17.kuramanime.ink"
 
 	res, err := http.Get(fmt.Sprintf("%s/schedule?scheduled_day=%s&need_json=true", baseURL, strings.ToLower(time.Now().Weekday().String())))
 	if err != nil {
