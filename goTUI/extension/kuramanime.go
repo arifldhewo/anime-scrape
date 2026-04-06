@@ -74,11 +74,12 @@ func (k Kuramanime) AnimeDaily() ([]AnimeDaily, error) {
 func (k Kuramanime) GetCommand() CommandSyntax {
 	k.command.Daily = "kuramanime-daily"
 	k.command.Search = "kuramanime-search"
+	k.command.Season = "kuramanime-season"
 
 	return k.command
 }
 
-func (k Kuramanime) RunCommand(day int, search string) (tea.Cmd, error) {
+func (k Kuramanime) RunCommand(day int, search string, pageState int) (tea.Cmd, error) {
 	fileName, err := helpers.CreateFileTempAndReturnTitle()
 	if err != nil {
 		return nil, err
@@ -87,24 +88,29 @@ func (k Kuramanime) RunCommand(day int, search string) (tea.Cmd, error) {
 	getCommand := k.GetCommand()
 
 	var selectedCommand string
-	if search != "" {
 
+	switch pageState {
+	case 0:
+		selectedCommand = getCommand.Daily
+	case 1:
 		if err := helpers.WriteSearchFile(search); err != nil {
 			return nil, err
 		}
-
 		selectedCommand = getCommand.Search
-	} else {
-		selectedCommand = getCommand.Daily
+	case 2:
+		selectedCommand = getCommand.Season
 	}
 
 	fmt.Println(selectedCommand)
 
 	cmd := exec.Command("npm", "run", selectedCommand)
-	if search != "" {
-		cmd.Env = append(os.Environ(), "ANIME_FILE_TEMP="+fileName)
-	} else {
-		cmd.Env = append(os.Environ(), "DAY="+strconv.Itoa(day+1), "ANIME_FILE_TEMP="+fileName)
+	switch pageState {
+	case 0:
+		cmd.Env = append(os.Environ(), "DAY="+strconv.Itoa(day+1), "ANIME_FILE_TEMP="+fileName, "MODE=daily")
+	case 1:
+		cmd.Env = append(os.Environ(), "ANIME_FILE_TEMP="+fileName, "MODE=search")
+	case 2:
+		cmd.Env = append(os.Environ(), "ANIME_FILE_TEMP="+fileName, "MODE=season")
 	}
 
 	cmd.Stdout = os.Stdout

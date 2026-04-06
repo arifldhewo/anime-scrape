@@ -1,9 +1,10 @@
 import { AnimesData, iQuickResAPI } from "@/Interface/kuramanime/iQuickResAPI";
 import { iQuickResSearchAPI } from "@/Interface/kuramanime/iQuickResSearchAPI";
-import { config } from "@/config/config";
+import { config } from "@/configs/config";
 import { getDay } from "@/helper/Helper";
-import { APIResponse, chromium, Page } from "@playwright/test";
+import { APIResponse, Page } from "@playwright/test";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
+import { mode } from "@/models/config.model";
 
 export async function kuramanimeInit(page: Page) {
 	const selectedDay = config.SELECTED_DAY;
@@ -19,6 +20,7 @@ export async function kuramanimeInit(page: Page) {
 	await Promise.all([
 		getdaily(selectedDay, page, kuramanimeBaseURL, fileTemp, cookie),
 		getSearch(page, fileTemp, kuramanimeBaseURL, cookie),
+		getCurrentSeason(page, fileTemp, kuramanimeBaseURL, cookie),
 	]);
 }
 
@@ -28,8 +30,9 @@ async function getdaily(
 	kuramanimeBaseURL: string,
 	fileTemp: string,
 	cookie: string,
+	actualMode: string = config.MODE,
 ) {
-	if (selectedDay === undefined) {
+	if (actualMode !== mode.DAILY) {
 		return;
 	}
 
@@ -79,7 +82,17 @@ async function getdaily(
 	}
 }
 
-async function getSearch(page: Page, fileTemp: string, kuramanimeBaseURL: string, cookie: string) {
+async function getSearch(
+	page: Page,
+	fileTemp: string,
+	kuramanimeBaseURL: string,
+	cookie: string,
+	actualMode: string = config.MODE,
+) {
+	if (actualMode !== mode.SEARCH) {
+		return;
+	}
+
 	const readSearchJSON: Record<string, any> = JSON.parse(readFileSync(`data/search.json`, "utf-8"));
 
 	const searchResponse: APIResponse = await page.request.get(
@@ -95,4 +108,71 @@ async function getSearch(page: Page, fileTemp: string, kuramanimeBaseURL: string
 
 	writeFileSync(`data/${fileTemp}`, JSON.stringify(searchJSON));
 }
-async function getSeason() {}
+
+async function getCurrentSeason(
+	page: Page,
+	fileTemp: string,
+	kuramanimeBaseURL: string,
+	cookie: string,
+	actualMode: string = config.MODE,
+) {
+	if (actualMode !== mode.SEASON) {
+		return;
+	}
+
+	let URLPath: string = `${kuramanimeBaseURL}/schedule?scheduled_day=text&need_json=true`;
+
+	const getCurrentSeason = await page.request.get(URLPath, {
+		headers: {
+			Cookie: cookie,
+		},
+		params: {
+			page: 1,
+		},
+	});
+
+	const currentSeasonJSON: iQuickResAPI = await getCurrentSeason.json();
+
+	let filterEps: AnimesData[];
+
+	if (currentSeasonJSON.animes.last_page > 1) {
+		for (let i = 1; i <= currentSeasonJSON.animes.last_page; i++) {
+			const currentSeasonResponse: APIResponse = await page.request.get(URLPath, {
+				headers: {
+					Cookie: cookie,
+				},
+				params: {
+					page: i,
+				},
+			});
+
+			const currentSeasonJSON1: iQuickResAPI = await currentSeasonResponse.json();
+
+			const filterCountry: AnimesData[] = currentSeasonJSON1.animes.data.filter(
+				(data) => data.country_code === "JP",
+			);
+
+			filterEps = filterCountry.filter((data) => data.posts.length <= 27);
+
+			if (i === 1) {
+				writeFileSync(`data/${fileTemp}`, JSON.stringify(filterEps));
+			} else {
+				const readDailyJSON: AnimesData[] = JSON.parse(readFileSync(`data/${fileTemp}`, "utf-8"));
+
+				for (let i = 0; i < filterEps.length; i++) {
+					readDailyJSON.push(filterEps[i]);
+				}
+
+				writeFileSync(`data/${fileTemp}`, JSON.stringify(readDailyJSON));
+			}
+		}
+	} else {
+		const filterCountry: AnimesData[] = currentSeasonJSON.animes.data.filter(
+			(data) => data.country_code === "JP",
+		);
+
+		filterEps = filterCountry.filter((data) => data.posts.length <= 27);
+
+		writeFileSync(`data/${fileTemp}`, JSON.stringify(filterEps));
+	}
+}

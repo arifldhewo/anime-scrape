@@ -33,11 +33,13 @@ type MainModel struct {
 	}
 	DailyPage  SelectModel
 	SearchPage TypeModel
+	SeasonalPage SelectModel
 	ConfigPage SelectModel
 	ExecPage   struct {
 		Method struct {
 			Daily  map[int]struct{}
 			Search string
+			Seasonal map[int]struct{}
 		}
 		Stdout    string
 		Stderr    string

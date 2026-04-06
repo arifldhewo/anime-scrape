@@ -27,8 +27,8 @@ export interface AnimesData {
 	total_episodes: number | null;
 	aired_from: string | null;
 	aired_to: string | null;
-	schedule_day: string;
-	schedule_time: string;
+	scheduled_day: string;
+	scheduled_time: string;
 	score: number | null;
 	votes: number;
 	image_landscape_url: string;
