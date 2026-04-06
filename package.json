@@ -1,6 +1,6 @@
 {
 	"name": "anime-scrape",
-	"version": "3.4.10",
+	"version": "3.5.0",
 	"main": "index.js",
 	"scripts": {
 		"spy": "npx playwright codegen kuramanime.dad",
@@ -10,6 +10,7 @@
 		"kuramanime-video": "npx playwright test --project chromium --grep \"@kuramanime_video\"",
 		"kuramanime-daily": "npm run kuramanime-iniate && npx playwright test --project chromium --workers 4 --grep \"@kuramanime_daily\"",
 		"kuramanime-search": "npm run kuramanime-iniate && npx playwright test --project chromium --workers 4 --grep \"@kuramanime_search\"",
+		"kuramanime-season": "npm run kuramanime-iniate && npx playwright test --project chromium --workers 4 --grep \"@kuramanime_season\"",
 		"show-report": "npx playwright show-report"
 	},
 	"keywords": [],

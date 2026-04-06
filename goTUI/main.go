@@ -34,7 +34,7 @@ func initialModel() MainModel {
 		}{
 			SelectModel: SelectModel{
 				Title:   "What do you want to do? [Adjust the terminal size if get truncated] \n\n",
-				Choices: []string{"Daily", "Search", "Config", "Updater"},
+				Choices: []string{"Daily", "Search", "Seasonal", "Config", "Updater"},
 				Cursor:  0,
 			},
 		},
@@ -55,6 +55,10 @@ func initialModel() MainModel {
 			Title:     "What do you want to search? | [Esc] Prev Menu\n\n",
 			TextInput: SearchInput,
 		},
+		SeasonalPage: SelectModel {
+			Title: "This is page for retrieving anime for this current season | [Esc] Prev Menu\n\n",
+			Choices: []string{"Yes"},
+		},
 		ConfigPage: SelectModel{
 			Title:   "This info about what provider you used. | [Esc] Prev Menu\n\n",
 			Choices: []string{},
@@ -63,6 +67,7 @@ func initialModel() MainModel {
 			Method struct {
 				Daily  map[int]struct{}
 				Search string
+				Seasonal map[int]struct{}
 			}
 			Stdout    string
 			Stderr    string
@@ -140,10 +145,12 @@ func (m MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case 1:
 			// return search flow
 			return SearchUpdate(msg, m)
-		case 2:
+		case 2: 
+			return SeasonalUpdate(msg, m)
+		case 3:
 			// return config flow
 			return ConfigUpdate(msg, m)
-		case 3:
+		case 4:
 			return AppUpdate(msg, m)
 		}
 	case 3:
@@ -243,12 +250,42 @@ func SearchUpdate(msg tea.Msg, m MainModel) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
+func SeasonalUpdate(msg tea.Msg, m MainModel) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+
+	case tea.KeyMsg:
+
+		switch msg.String() {
+
+		case "up", "k":
+			if m.SeasonalPage.Cursor > 0 {
+				m.SeasonalPage.Cursor--
+			}
+
+		case "down", "j":
+			if m.SeasonalPage.Cursor < len(m.SeasonalPage.Choices)-1 {
+				m.SeasonalPage.Cursor++
+			}
+
+		case "esc":
+			m.State = 1
+
+		case "enter", " ":
+			m.SeasonalPage.Selected = m.SeasonalPage.Cursor
+			m.ExecPage.Method.Seasonal = make(map[int]struct{})
+			m.ExecPage.Method.Seasonal[m.SeasonalPage.Selected] = struct{}{}
+			m.State = 3
+		}
+	}
+	return m, nil
+}
+
 func ExecUpdate(msg tea.Msg, m MainModel) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		if msg.String() == "r" && m.ExecPage.isRunning == false {
 			m.ExecPage.isRunning = true
-			extension.FactoryCommand(m.DailyPage.Selected, m.SearchPage.TextInput.Value())
+			extension.FactoryCommand(m.DailyPage.Selected, m.SearchPage.TextInput.Value(), m.InitPage.Selected)
 			m.ExecPage.isRunning = false
 			m.SearchPage.TextInput.Reset()
 			m.State = 1
@@ -259,7 +296,7 @@ func ExecUpdate(msg tea.Msg, m MainModel) (tea.Model, tea.Cmd) {
 			return nil, tea.Quit
 		case "esc":
 			m.ExecPage.isRunning = false
-			m.State = 1
+			m.State = 2
 			m.SearchPage.TextInput.Reset()
 			return m, nil
 		}
@@ -341,10 +378,12 @@ func (m MainModel) View() string {
 		case 1:
 			// return search flow
 			return SearchView(m)
-		case 2:
+		case 2: 
+			return SeasonalView(m)
+		case 3:
 			// return config flow
 			return ConfigView(m)
-		case 3:
+		case 4:
 			// return updater flow
 			return UpdaterView(m)
 		}
@@ -415,6 +454,25 @@ func DailyView(m MainModel) string {
 
 func SearchView(m MainModel) string {
 	return fmt.Sprintf(" %s\n Input: %s \n\n Press ctrl+c to Quit", m.SearchPage.Title, m.SearchPage.TextInput.View())
+}
+
+func SeasonalView(m MainModel) string {
+	s := " " + m.SeasonalPage.Title
+
+	for i, choice := range m.SeasonalPage.Choices {
+		cursor := " "
+		checked := " "
+		if m.SeasonalPage.Cursor == i {
+			cursor = ">"
+			checked = "x"
+		}
+
+		s += fmt.Sprintf(" %s [%s] %v \n", cursor, checked, choice)
+	}
+
+	s += "\n Press ctrl+c to Quit\n"
+
+	return s
 }
 
 func ConfigView(m MainModel) string {

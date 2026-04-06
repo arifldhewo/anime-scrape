@@ -5,14 +5,14 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-func FactoryCommand(day int, search string) (tea.Cmd, error) {
+func FactoryCommand(day int, search string, pageState int) (tea.Cmd, error) {
 	config := helpers.ReadFileConfig()
 
 	switch config.Provider.SetProvider {
 	case 0:
 		kuramanime := Kuramanime{}
 
-		cmd, err := kuramanime.RunCommand(day, search)
+		cmd, err := kuramanime.RunCommand(day, search, pageState)
 		if err != nil {
 			return nil, err
 		}
